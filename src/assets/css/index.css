@@ -1,0 +1,207 @@
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: black;
+    color: white;
+}
+
+* {
+    font-family: 'Roboto', sans-serif;
+}
+
+#root {
+    width: 100vw;
+    height: 100vh;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+.app-name {
+    color: red;
+    font-family: 'Kenia';
+    text-decoration: none;
+}
+
+.splash {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.splash>span {
+    color: red;
+    font-size: 400px;
+    font-family: 'Kenia';
+}
+
+.splash-animation {
+    animation: textgrowth 5s infinite;
+}
+
+@keyframes textgrowth {
+    0% {
+        font-size: 400px;
+    }
+
+    100% {
+        font-size: 5000px;
+    }
+}
+
+.select-user {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.select-user>.app-name {
+    margin: 10px;
+}
+
+.select-user>.users-panel {
+    display: flex;
+    height: 100%;
+    padding-left: 50px;
+    padding-right: 50px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.select-user>.users-panel>.users-list {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
+.user-item {
+    display: flex;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-right: 20px;
+    align-items: center;
+    flex-direction: column;
+}
+
+.user-item>div {
+    width: 120px;
+    height: 110px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    background-size: cover;
+    border: 2px solid transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+
+}
+
+.user-item:hover>div {
+    border-color: white !important;
+}
+
+.user-item:hover>span {
+    font-weight: bold;
+}
+
+.user-item>.default>.eyes {
+    display: flex;
+    margin-top: 25%;
+    padding-left: 17%;
+    padding-right: 17%;
+    justify-content: space-between;
+}
+
+.user-item>.default>.eyes>div {
+    width: 12px;
+    height: 12px;
+    border-radius: 100%;
+    background-color: white;
+}
+
+.user-item>.default>.mouth {
+    background-color: transparent;
+
+    height: 45px;
+    width: 5px;
+    border-radius: 150px 20px 20px 150px;
+    border-top: 5px solid white;
+    border-left: 5px solid white;
+    border-bottom: 5px solid white;
+    transform: translate(60px) rotate(-90deg);
+}
+
+.add-user-dialog {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media (max-width: 800px) {
+    .norseu-dialog {
+        width: 100%;
+        height: 90%;
+    }
+}
+
+.add-user-dialog > * {
+    margin-bottom: 20px;
+}
+
+.add-user-dialog > * {
+    margin-bottom: 20px;
+}
+
+
+/* generall Styles */
+
+.norseu-alert-dialog .norseu-dialog-content {
+    height: 100%;
+}
+
+.norseu-dropdown-inputtext-panel {
+    background-color: transparent !important;
+}
+
+.norseu-dropdown-inputtext {
+    background-color: rgba(194, 204, 207, 0.2);
+}
+
+input {
+    color: white;
+}
+
+.norseu-alert-dialog-footer > button {
+    margin-right: 10px;
+}
+
+.norseu-dialog-content, .norseu-popover {
+    border: 1px solid white;
+    background-color: black;
+}
+
+.invisible {
+    display: none !important;
+}
+
+.skeleton-button {
+    cursor: pointer;
+    background-color: transparent;
+    color: rgb(179, 177, 177);
+    padding: 10px 20px 10px 20px;
+    border: 2px solid rgb(179, 177, 177);
+}
+
+.skeleton-button:hover {
+    background-color: rgb(179, 177, 177, 0.2);
+}
