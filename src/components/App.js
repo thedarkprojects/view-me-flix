@@ -14,6 +14,7 @@ function App() {
             <ScrollToTop/>
             <Routes>
                 <Route exact path="/" element={<Splash />}></Route>
+                <Route exact path="/dashboard" element={<Landing />}></Route>
                 <Route exact path="/select-user" element={<SelectUser />}></Route>
                 {/* <Route path="/login" element={<Login />}></Route>
                 <Route path="/signup" element={<SignUp />}></Route>

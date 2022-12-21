@@ -79,12 +79,46 @@ export class Database {
 
     /** The Database Implementation */
 
+    static saveRecords(tableName, records) {
+        Database.cacheObject(tableName, records);
+        return records;
+    }
+
+    static getRecords(tableName) {
+        const records = Database.objectFromCache(tableName, []);
+        return records;
+    }
+
+    static addToRecord(tableName, newRecord) {
+        const records = Database.objectFromCache(tableName, []);
+        newRecord.id = records.length+1;
+        records.push(newRecord);
+        Database.cacheObject(tableName, records);
+        return records;
+    }
+
+    static updateInRecord(tableName, record) {
+        const records = Database.deleteFromRecord(tableName, record);
+        records.splice(record.id-1, 0, record);
+        Database.cacheObject(tableName, records);
+        return records;
+    }
+
+    static deleteFromRecord(tableName, record) {
+        const records = Database.getRecords(tableName);
+        const index = records.findIndex(x => x.id === record.id);
+        records.splice(index, 1);
+        return Database.saveRecords(tableName, records);
+    }
+
+    /** User Record */
+
     static getUsers() {
         /*return [
             { id: 1, username: "Thecarisma", color_scheme: "red", profile_piture: 'https://avatars.githubusercontent.com/u/14879387' },
             { id: 2, username: "Grace", color_scheme: "green", profile_piture: null },
         ]*/
-        const users = Database.objectFromCache("view.me.users", []);
+        const users = Database.getRecords("view.me.users");
         users.push({
             id: 0,
             username: "Add Profile",
@@ -95,10 +129,7 @@ export class Database {
     }
 
     static addNewUser(user) {
-        const users = Database.objectFromCache("view.me.users", []);
-        user.id = users.length+1;
-        users.push(user);
-        Database.cacheObject("view.me.users", users);
+        const users = Database.addToRecord("view.me.users", user);
         users.push({
             id: 0,
             username: "Add Profile",
@@ -106,6 +137,16 @@ export class Database {
             color_scheme: "transparent"
         });
         return users;
+    }
+
+    static updateUser(user) {
+        Database.updateInRecord("view.me.users", user);
+        return Database.getUsers();
+    }
+
+    static deleteUser(user) {
+        Database.deleteFromRecord("view.me.users", user);
+        return Database.getUsers();
     }
 
 }
