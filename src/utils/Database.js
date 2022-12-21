@@ -149,4 +149,21 @@ export class Database {
         return Database.getUsers();
     }
 
+    /* COlor Map */
+    
+    static _tempNorseUColorMap = {
+        "norseu-stateless": "maroon",
+        "norseu-primary": "#3699ff",
+        "norseu-secondary": "#e4e6ef",
+        "norseu-success": "#1bc5bd",
+        "norseu-info": "#8950fc",
+        "norseu-warning": "#ffa800",
+        "norseu-danger": "#f64e60",
+        "norseu-skeleton": "maroon",
+        "norseu-dark": "#000000",
+        "norseu-light": "#ffffff"
+    };
+
+    static getColorHex(scheme) { return Database._tempNorseUColorMap[scheme]; }
+
 }

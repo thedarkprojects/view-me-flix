@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useNavigate  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Database, viewMeConsole } from "../utils";
 import { alertDialog } from "@ronuse/norseu/core/overlay";
-import { Alignment, Scheme } from "@ronuse/norseu/core/variables";
 import { Dropdown, InputText } from "@ronuse/norseu/core/form";
+import { Alignment, Scheme } from "@ronuse/norseu/core/variables";
 
 function SelectUser() {
 
@@ -15,13 +15,13 @@ function SelectUser() {
     const colorSchemeRef = React.useRef();
     const [editMode, setEditMode] = React.useState(false);
     const [users, setUsers] = React.useState(Database.getUsers());
-    const colorDropdownOptions = [
-        { label: "Red", value: "#a82828" },
-        { label: "Blue", value: "#316aa3" },
-        { label: "Green", value: "#31a34e" },
-        { label: "Yellow", value: "#c2ae2f" },
-        { label: "Purple", value: "#c22fb1" },
-    ];
+    const colorDropdownOptions = Object.keys(Scheme).map((scheme) => {
+        return {
+            label: scheme,
+            value: Scheme[scheme],
+            icon: <div className="scheme-icon" style={{ background: Database.getColorHex([Scheme[scheme]]) }}></div>
+        };
+    });
 
     return (<div className="select-user">
         <Link to="/" className="app-name" style={{ fontSize: 50 }}>VM</Link>
@@ -29,12 +29,12 @@ function SelectUser() {
             <span style={{ fontSize: 40 }}>Who's watching?</span>
             <div className="users-list">
                 {users.map(user => {
-                    let style = { borderColor: user.color_scheme, backgroundImage: `url('${user.profile_piture}')` };
+                    let style = { borderColor: Database.getColorHex(user.color_scheme), backgroundImage: `url('${user.profile_piture}')` };
                     if (!user.profile_piture) {
                         style = {
-                            borderTopColor: `${user.color_scheme}`,
+                            borderTopColor: `${Database.getColorHex(user.color_scheme)}`,
                             background: `linear-gradient(180deg, transparent 0, white 250%)`,
-                            backgroundColor: `${user.color_scheme}`
+                            backgroundColor: `${Database.getColorHex(user.color_scheme)}`
                         }
                     }
                     if (user.id === 0) style.backgroundSize = "70%";
@@ -66,9 +66,9 @@ function SelectUser() {
             style: { minWidth: "30%" },
             message: (<div className="add-user-dialog">
                 <span>Add new user</span>
-                <InputText ref={usernameRef} placeholder="Username" scheme={Scheme.LIGHT} fill />
-                <Dropdown ref={colorSchemeRef} placeholder="Color Scheme" scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill selectedOptionIndex={2} />
-                <InputText ref={profileUrlRef} placeholder="Profile picture Url (optional)" scheme={Scheme.LIGHT} fill />
+                <InputText label="Username" ref={usernameRef} placeholder="" scheme={Scheme.LIGHT} fill />
+                <Dropdown ref={colorSchemeRef} label="Color Scheme" scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill selectedOptionIndex={3} />
+                <InputText label="Profile picture Url (optional)" ref={profileUrlRef} placeholder="" scheme={Scheme.LIGHT} fill />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>),
             confirmLabel: "Add User",
@@ -99,10 +99,10 @@ function SelectUser() {
             style: { minWidth: "30%" },
             message: (<div className="add-user-dialog">
                 <span>Update User Account</span>
-                <InputText ref={usernameRef} placeholder="Username" scheme={Scheme.LIGHT} defaultValue={user.username} fill />
-                <Dropdown ref={colorSchemeRef} placeholder="Color Scheme" scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill
+                <InputText ref={usernameRef} label="Username" scheme={Scheme.LIGHT} defaultValue={user.username} fill />
+                <Dropdown ref={colorSchemeRef} label="Color Scheme" scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill
                     selectedOptionIndex={colorDropdownOptions.findIndex(x => x.value === user.color_scheme)} />
-                <InputText ref={profileUrlRef} placeholder="Profile picture Url (optional)" defaultValue={user.profile_piture} scheme={Scheme.LIGHT} fill />
+                <InputText ref={profileUrlRef} label="Profile picture Url (optional)" defaultValue={user.profile_piture} scheme={Scheme.LIGHT} fill />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>),
             alignFooter: Alignment.CENTER,
