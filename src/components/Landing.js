@@ -14,22 +14,22 @@ function Landing() {
     const user = location.state.user;
 
     React.useEffect(() => {
-        //console.log(">>>>>>", user)
+        //console.log(">>>>>>", user) 
     }, []);
 
     return (<div className="landing">
         <TabPane scheme={user.color_scheme} activeTabIndex={0} renderActiveTabOnly alignNavigator={Alignment.BOTTOM}>
             <TabPanel title={landingIcon("fa fa-home", "Home")} contentClassName="landing-tab-content">
-                <Home user={user}/>
+                <Home user={user} />
             </TabPanel>
             <TabPanel title={landingIcon("fa fa-search", "Search")}>
-                <Search user={user}/>
+                <Search user={user} />
             </TabPanel>
             <TabPanel title={landingIcon("fa fa-download", "Downloads")}>
-            <Downloads user={user}/>
+                <Downloads user={user} />
             </TabPanel>
             <TabPanel title={landingIcon("fa fa-list", "More")}>
-            <More user={user}/>
+                <More user={user} />
             </TabPanel>
         </TabPane>
     </div>);
