@@ -9,9 +9,9 @@ export class RequestsService extends BaseService {
         });
     }
 
-    search(value) {
+    search(value, page) {
         value = value.replace(/ /g, '-');
-        return this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=https://soap2day.rs/search/${value}&method=GET`, { refreshCache: false }), (response) => {
+        return this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=https://soap2day.rs/search/${value}?page=${page}&method=GET`, { refreshCache: false }), (response) => {
             //console.log("RESPONSE:::::::::", response);
         });
     }

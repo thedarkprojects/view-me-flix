@@ -5,7 +5,7 @@ import { Alignment, Scheme } from "@ronuse/norseu/core/variables";
 import { TabPane, TabPanel } from '@ronuse/norseu/core/panels';
 import Home from "./landing/Home";
 import Search from "./landing/Search";
-import More from "./landing/More";
+import Settings from "./landing/Settings";
 import Downloads from "./landing/Downloads";
 
 function Landing() {
@@ -28,8 +28,8 @@ function Landing() {
             <TabPanel title={landingIcon("fa fa-download", "Downloads")}>
                 <Downloads user={user} />
             </TabPanel>
-            <TabPanel title={landingIcon("fa fa-list", "More")}>
-                <More user={user} />
+            <TabPanel title={landingIcon("fa fa-cog", "Settings")}>
+                <Settings user={user} />
             </TabPanel>
         </TabPane>
     </div>);
