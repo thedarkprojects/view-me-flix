@@ -6,8 +6,8 @@ const port = 3001
 
 app.get('/ext/raw', (req, res) => {
     if (!req.query.url) return res.send("");
+    res.set('Access-Control-Allow-Origin', '*');
     ffs[(req.query.method || "get").toLowerCase()](req.query.url, { responseType: "text", ...req.query }).then(function (response) {
-        res.set('Access-Control-Allow-Origin', '*');
         res.send(response.data)
     }).catch(function (err) {
         console.error(err);
@@ -17,21 +17,22 @@ app.get('/ext/raw', (req, res) => {
 
 app.get('/ext/json', (req, res) => {
     if (!req.query.url) return res.send("");
+    res.set('Access-Control-Allow-Origin', '*');
     ffs[(req.query.method || "get").toLowerCase()](req.query.url, { responseType: "text", ...req.query }).then(function (response) {
-        res.set('Access-Control-Allow-Origin', '*');
         if (req.query.clazz === "managed") {
             return res.json(JSON.parse(response.data));
         }
         res.json(useCleanser((req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), response.data));
     }).catch(function (err) {
         console.error(err);
-        res.send(err.message);
+        res.send([]);
     });
 });
 
 // client proxies
 
 function getClientUrl(url, req, res) {
+    res.set('Access-Control-Allow-Origin', '*');
     ffs.get(url, { responseType: "text", ...req.query }).then(function (response) {
         res.send(response.data)
     }).catch(function (err) {

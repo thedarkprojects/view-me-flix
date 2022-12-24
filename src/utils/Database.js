@@ -27,7 +27,8 @@ export const Database = {
         "Kids",
         "Music",
         "Mystery",
-        "News"
+        "News",
+        "Coming Soon"
     ],
 
     // assets
@@ -178,6 +179,20 @@ export const Database = {
     deleteUser(user) {
         Database.deleteFromRecord("view.me.users", user);
         return Database.getUsers();
+    },
+
+    /** User Record */
+
+    getFavourites() {
+        return Database.getRecords("view.me.favourites");
+    },
+
+    addToFavourite(media) {
+        return Database.addToRecord("view.me.favourites", media);
+    },
+
+    removeFromFavourite(media) {
+        return Database.deleteFromRecord("view.me.favourites", media);
     },
 
     /* COlor Map */

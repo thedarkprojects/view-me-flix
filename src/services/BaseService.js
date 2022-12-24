@@ -62,7 +62,9 @@ export class BaseService {
         return this.report(Promise.all(Object.keys(urlMap).map(urlKey =>
             this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=${urlMap[urlKey]}&method=GET`, { mapKey: urlKey, refreshCache: true })))), (responses) => {
                 for (const response of responses) {
-                    urlMap[response.config.mapKey] = this.shuffleArray(response.data);
+                    urlMap[response.config.mapKey] = this.shuffleArray(response.config.mapKey === "Popular" 
+                        ? response.data.slice(0, 24) 
+                        : response.data);
                 }
                 responses.data = urlMap;
             });

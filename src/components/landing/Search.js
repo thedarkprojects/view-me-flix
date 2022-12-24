@@ -43,7 +43,7 @@ function Search(props) {
         requestService.search(e.target.value, (page || currentPage)).then(res => {
             if (!res.data.length) {
                 setCurrentlyFetching(null);
-                setSearchResult([...searchResult/*, { preview_image: Database.getAsset("green1") }, { preview_image: Database.getAsset("green2") }*/])
+                setSearchResult([...searchResult ])
                 return;
             }
             setCurrentlyFetching(e.target.value);

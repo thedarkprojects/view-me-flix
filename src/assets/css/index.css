@@ -271,17 +271,17 @@ code {
 }
 
 .home>.content,
-.home>.content>.preview {
+.preview {
     display: flex;
     flex-direction: column;
 }
 
-.home>.content>.preview {
+.preview {
     align-items: center;
     position: relative;
 }
 
-.home>.content>.preview>.blur {
+.preview>.blur {
     position: absolute;
     top: 0;
     left: 0;
@@ -290,25 +290,25 @@ code {
     background: linear-gradient(to bottom, transparent 0%, black 55%);
 }
 
-.home>.content>.preview>.title {
+.preview>.title {
     z-index: 1;
     font-size: 3em;
     max-width: 400px;
     text-align: center;
 }
 
-.home>.content>.preview>.genres {
+.preview>.genres {
     z-index: 1;
     margin-top: 15px;
     text-align: center;
     margin-bottom: 15px;
 }
 
-.home>.content>.preview>.controls {
+.preview>.controls {
     display: flex;
 }
 
-.home>.content>.preview>.controls>.b {
+.preview>.controls>.b {
     margin: 15px;
     display: flex;
     color: white;
@@ -318,11 +318,11 @@ code {
     background: transparent !important;
 }
 
-.home>.content>.preview>.controls>button>i {
+.preview>.controls>button>i {
     margin-bottom: 5px;
 }
 
-.home>.content>.preview>.controls>.play {
+.preview>.controls>.play {
     margin: 15px;
     display: flex;
     color: black;
@@ -350,6 +350,7 @@ code {
     margin-top: 10px;
     margin-bottom: 1px;
     flex-direction: row;
+    background-color: black;
 }
 
 .movie-list>div {
@@ -400,6 +401,8 @@ code {
 .search {
     height: 90%;
     padding: 20px;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
 }
 
 

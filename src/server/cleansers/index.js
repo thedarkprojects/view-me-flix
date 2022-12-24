@@ -39,7 +39,7 @@ JSON Spec
         "https://image.links.png........."
     ],
     "synopsis": "Sophie reflects on the shared joy and private melancholy..."
-    "video_link": "https://linkg.view/......",
+    "media_link": "https://linkg.view/......",
     "extra_data": {
 
     }

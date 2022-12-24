@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useLocation } from 'react-router-dom';
 import { Button } from '@ronuse/norseu/core/buttons';
 import { Alignment, Scheme } from "@ronuse/norseu/core/variables";
@@ -10,10 +11,12 @@ import Downloads from "./landing/Downloads";
 
 function Landing() {
 
+    const navigate = useNavigate();
     const location = useLocation();
     const user = location.state.user;
 
     React.useEffect(() => {
+        if (!user) return navigate("/");
         //console.log(">>>>>>", user) 
     }, []);
 
@@ -25,9 +28,9 @@ function Landing() {
             <TabPanel title={landingIcon("fa fa-search", "Search")}>
                 <Search user={user} />
             </TabPanel>
-            <TabPanel title={landingIcon("fa fa-download", "Downloads")}>
+            {/** <TabPanel title={landingIcon("fa fa-ship", "Grand Fleet")}>
                 <Downloads user={user} />
-            </TabPanel>
+            </TabPanel> **/}
             <TabPanel title={landingIcon("fa fa-cog", "Settings")}>
                 <Settings user={user} />
             </TabPanel>
