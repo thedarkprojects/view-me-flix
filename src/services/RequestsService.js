@@ -17,12 +17,34 @@ export class RequestsService extends BaseService {
     }
 
     getGenreList(genre, page) {
-        genre = genre.replace(/ /g, '-');
+        genre = genre.replace(/& /g,'').replace(/\s/g, '-');
         const url = genre == "Popular" 
             ? "https://soap2day.rs/home" 
             : genre === "Coming-Soon" 
                 ? "https://soap2day.rs/coming-soon" 
                 : `https://soap2day.rs/genre/${genre}` ;
+        return this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=${url}?page=${page}&method=GET`, { refreshCache: false }), (response) => {
+            //console.log("RESPONSE:::::::::", response);
+        });
+    }
+
+    getCastList(cast, page) {
+        cast = cast.replace(/& /g,'').replace(/\s/g, '-');
+        const url = `https://soap2day.rs/cast/${cast}` ;
+        return this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=${url}?page=${page}&method=GET`, { refreshCache: false }), (response) => {
+            //console.log("RESPONSE:::::::::", response);
+        });
+    }
+
+    getMoviesList(page) {
+        const url = "https://soap2day.rs/movie" ;
+        return this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=${url}?page=${page}&method=GET`, { refreshCache: false }), (response) => {
+            //console.log("RESPONSE:::::::::", response);
+        });
+    }
+
+    getTvShowsList(page) {
+        const url = "https://soap2day.rs/tv-show" ;
         return this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=${url}?page=${page}&method=GET`, { refreshCache: false }), (response) => {
             //console.log("RESPONSE:::::::::", response);
         });

@@ -405,6 +405,159 @@ code {
     background-repeat: no-repeat;
 }
 
+.watch-media {
+    width: 100%;
+    height: 100%;
+}
+
+.watch-show>.blured-bg {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: blur(30px);
+    position: absolute;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.watch-show {
+    height: 100%;
+}
+
+.watch-show>.preview {
+    padding: 20px;
+    padding-top: 0px;
+}
+
+.watch-show>.preview>* {
+    z-index: 2;
+}
+
+.watch-show>.preview>.blur {
+    z-index: 1;
+}
+
+.watch-show>.preview>.header {
+    z-index: 3;
+    width: 100%;
+    margin: 0px;
+    padding: 15px;
+    display: flex;
+    position: fixed;
+    padding-left: 50px;
+    background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+.watch-show>.preview>.header>span {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.watch-show>.preview>.header>span:hover {
+    font-weight: bold;
+}
+
+.watch-show>.preview>.poster {
+    width: 150px;
+    height: 200px;
+    margin-top: 18vh;
+}
+
+.watch-show>.preview>.main-controls {
+    width: 100%;
+    margin: 30px;
+    margin-top: 40px;
+}
+
+.watch-show>.preview>.main-controls>.norseu-button-group {
+    margin-top: 10px;
+}
+
+.ws-bg-b {
+    display: flex;
+    flex-direction: column;
+}
+
+.ws-bg-b>i {
+    margin-bottom: 2px;
+}
+
+.watch-show>.preview>.title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.watch-show>.preview>.synopsis {
+    font-size: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
+    -webkit-box-orient: vertical;
+}
+
+.watch-show>.preview>.synopsis,
+.watch-show>.preview>.casts,
+.watch-show>.preview>.released,
+.watch-show>.preview>.genres {
+    width: 100%;
+    margin-top: 2px;
+    text-align: left;
+    margin-bottom: 2px;
+}
+
+.watch-show>.preview>.casts>span,
+.watch-show>.preview>.genres>span {
+    cursor: pointer;
+}
+
+.watch-show>.preview>.casts>span:hover,
+.watch-show>.preview>.genres>span:hover {
+    font-weight: bold;
+}
+
+.watch-show>.seasons-list {
+    padding: 20px;
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    border-top-style: solid;
+    background-color: black;
+}
+
+.watch-show>.seasons-list > .norseu-dropdown-inputtext-panel {
+    margin-left: 10px;
+}
+
+.watch-show>.seasons-list > .episode-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    flex-direction: column;
+}
+
+.watch-show>.seasons-list > .episode-list > button {
+    margin: 10px;
+    width: 95%;
+}
+
+.watch-show>.seasons-list > .episode-list > button > i {
+    margin-right: 10px;
+}
+
+.watch-show>.seasons-list > .episode-list > button > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
+
 
 /* generall Styles */
 

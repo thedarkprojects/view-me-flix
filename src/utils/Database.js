@@ -121,6 +121,27 @@ export const Database = {
         return records;
     },
 
+    indexInRecord(tableName, queries) {
+        const records = Database.objectFromCache(tableName, []);
+        let index = -1;
+        for (const query of queries) {
+            index = records.findIndex(x => {
+                query.op = (query.op || "").toLowerCase();
+                if (query.op === "!=" || query.op === "nq") return x[query.field] !== query.value;
+                if (query.op === "LIKE" || query.op === "contains") return x[query.field].includes(query.value);
+                if (query.op === "RLIKE" || query.op === "endswith")  return x[query.field].endsWith(query.value);
+                if (query.op === "LLIKE" || query.op === "startswith")  return x[query.field].startsWith(query.value);
+                return x[query.field] === query.value;
+            });
+        }
+        return index;
+    },
+
+    findInToRecord(tableName, queries) {
+        const records = Database.objectFromCache(tableName, []);
+        return records[Database.indexInRecord(tableName, queries)];
+    },
+
     addToRecord(tableName, newRecord) {
         const records = Database.objectFromCache(tableName, []);
         newRecord.id = records.length+1;
@@ -136,9 +157,9 @@ export const Database = {
         return records;
     },
 
-    deleteFromRecord(tableName, record) {
+    deleteFromRecord(tableName, record, queries) {
         const records = Database.getRecords(tableName);
-        const index = records.findIndex(x => x.id === record.id);
+        const index = queries ? Database.indexInRecord(tableName, queries): records.findIndex(x => x.id === record.id);
         records.splice(index, 1);
         return Database.saveRecords(tableName, records);
     },
@@ -187,12 +208,18 @@ export const Database = {
         return Database.getRecords("view.me.favourites");
     },
 
+    isFavourite(media) {
+        return Database.indexInRecord("view.me.favourites", [{ field: "title", value: media.title }]) > -1;
+    },
+
     addToFavourite(media) {
+        const existInRecord = Database.indexInRecord("view.me.favourites", [{ field: "title", value: media.title }]);
+        if (existInRecord > -1) return Database.removeFromFavourite(media, [{ field: "title", value: media.title }]);
         return Database.addToRecord("view.me.favourites", media);
     },
 
-    removeFromFavourite(media) {
-        return Database.deleteFromRecord("view.me.favourites", media);
+    removeFromFavourite(media, queries) {
+        return Database.deleteFromRecord("view.me.favourites", media, queries);
     },
 
     /* COlor Map */

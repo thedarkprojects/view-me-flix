@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { InputText } from "@ronuse/norseu/core/form";
 import { Database, viewMeConsole } from "../../utils";
 import { ViewportSensor } from "@ronuse/norseu/sensors";
@@ -10,6 +11,7 @@ import { Orientation } from "@ronuse/norseu/core/variables";
 function Search(props) {
 
     const user = props.user;
+    const navigate = useNavigate();
     const moviesScrollPanel = React.useRef();
     const requestService = new RequestsService();
     const [currentPage, setCurrentPage] = React.useState(1);
@@ -34,7 +36,8 @@ function Search(props) {
     </div>);
 
     function goToMovie(movie) {
-        viewMeConsole.clog("GOTO-MOVIE", movie);
+        const media = movie;
+navigate("/watch", { state: { user, media } });
     }
 
     function searchInputEvent(e, page) {

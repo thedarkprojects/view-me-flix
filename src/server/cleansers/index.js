@@ -15,6 +15,7 @@ module.exports = {
 JSON Spec
 
 {
+    type: "show",
     "title": "Aftersun",
     "trailer": "https://youtube/link",
     "release_date": "2022-10-21",
