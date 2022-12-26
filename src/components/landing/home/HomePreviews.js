@@ -48,7 +48,7 @@ function HomePreviews(props) {
                         : <span>Favorite</span>}
 
                 </Button>
-                <Button scheme={user.color_scheme} className="play">
+                <Button onClick={() => goToMovie(activeMedia)} scheme={user.color_scheme} className="play">
                     <i className="fa fa-play" style={{ marginRight: 5 }} />
                     <span>Play</span>
                 </Button>
@@ -84,7 +84,7 @@ function HomePreviews(props) {
 
     function goToMovie(movie) {
         const media = movie;
-navigate("/watch", { state: { user, media } });
+        navigate("/watch", { state: { user, media } });
     }
 
 }

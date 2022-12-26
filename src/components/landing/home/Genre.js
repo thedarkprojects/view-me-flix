@@ -43,7 +43,7 @@ function Genre(props) {
                             ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>Favorite</span>
                             : <span>Favorite</span>}
                     </Button>
-                    <Button scheme={user.color_scheme} className="play">
+                    <Button onClick={() => goToMovie(activeMedia)} scheme={user.color_scheme} className="play">
                         <i className="fa fa-play" style={{ marginRight: 5 }} />
                         <span>Play</span>
                     </Button>

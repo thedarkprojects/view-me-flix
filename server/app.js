@@ -71,16 +71,16 @@ function startExpressServer(options, cb) {
     const listener = app.listen(options.port, () => {
         options.listerner = listener;
         options.listenAddress = listener.address();
-        options.url = `http://${options.listenAddress.address.replace("::", "[::]")}:${options.listenAddress.port}`;
+        options.url = `http://${options.listenAddress.address.replace("::", "127.0.0.1")}:${options.listenAddress.port}`;
         cb(options);
     }).on('error', function(err) {
         if (options.useAnotherPort) {
             options.port++;
-            startExpressServer(options, cb);
-            return;
+            return startExpressServer(options, cb);
         }
         console.error("START SERVER ERROR", err);
     });
+    return listener;
 }
 
 module.exports = {

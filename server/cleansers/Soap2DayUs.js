@@ -1,3 +1,6 @@
+const ffs = require("kyofuuc").init({
+    responseType: "text"
+});
 const { default: parse } = require("node-html-parser");
 
 module.exports = class Soap2DayUs {
@@ -25,7 +28,7 @@ module.exports = class Soap2DayUs {
     }
 
     // base
-    static cleanMoviePage(html) {
+    static async cleanMoviePage(html, url) {
         const result = {};
         const servers = [];
         const seasons = [];
@@ -69,12 +72,32 @@ module.exports = class Soap2DayUs {
 
         const seasonsEls = root.querySelector(".slt-seasons-dropdown")?.querySelectorAll('a');
         for (const seasonEl of (seasonsEls || [])) {
+            const episodes = [];
             const link = seasonEl;
+            const seasonId = link.getAttribute("data-id");
+            const epRoot = parse((await ffs.get(`https://soap2day.rs/ajax/v2/season/episodes/${seasonId}`)).body);
+            const eps = epRoot.querySelectorAll(".nav-link");
+            for (const ep of eps) {
+                const epServers = [];
+                const epId = link.getAttribute("data-id");
+                const serverRoot = parse((await ffs.get(`https://soap2day.rs/ajax/v2/episode/servers/${epId}`)).body);
+                const serverEls = serverRoot.querySelectorAll(".nav-link");
+                for (const serverEl of serverEls) {
+                    const linkId = serverEl.getAttribute("data-id");
+                    epServers.push({
+                        name: serverEl.text.trim(),
+                        link: url.replace(/\/tv\//, '/watch-tv/') + "." + linkId
+                    });
+                }
+                episodes.push({
+                    title: ep.text.trim(),
+                    servers: epServers
+                });
+            }
             seasons.push({
+                seasonId,
                 name: link.text.trim(),
-                episodes: [
-
-                ]
+                episodes
             });
         }
         result.seasons = seasons;
