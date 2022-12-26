@@ -18,15 +18,11 @@ function WatchMedia() {
     const { user, media } = location.state;
     const requestService = new RequestService();
     const [mainMedia, setMainMedia] = React.useState(media);
+    const [selectedSeasonEpisodes, setSelectedSeasonEpisodes] = React.useState([]);
     const [isFavourite, setIsFavourite] = React.useState(Database.isFavourite(mainMedia));
 
     React.useEffect(() => {
-        requestService.getMovieDetail(mainMedia.media_link, mainMedia.source).then(res => {
-            cMedia = { ...media, ...res.data };
-            setMainMedia(cMedia);
-        }).catch(err => {
-            viewMeConsole.error(err);
-        });
+        fetchMediaDetails(mainMedia);
     }, []);
 
     return (<div className="watch-media">
@@ -37,11 +33,11 @@ function WatchMedia() {
                 <div className="blur" style={{ background: "linear-gradient(to bottom, transparent 0%, black 80%)" }}></div>
                 <img className="poster" src={mainMedia.preview_image?.replace("178x268", "5000x5000")} />
                 <div className="main-controls">
-                    <Button icon={mainMedia.servers ? "fa fa-play" : "fa fa-spinner fa-spin"} 
+                    <Button icon={mainMedia.servers ? "fa fa-play" : "fa fa-spinner fa-spin"}
                         disabled={mainMedia.servers === undefined}
-                        alignIcon={Alignment.CENTER} text="Play" scheme={user.color_scheme} 
-                        onClick={playMedia} fill />
-                    <ButtonGroup style={{ display: (mainMedia.servers ? "flex" : "none") }} scheme={Scheme.LIGHT}fill>
+                        alignIcon={Alignment.CENTER} text="Play" scheme={user.color_scheme}
+                        onClick={() => playMedia()} fill />
+                    <ButtonGroup style={{ display: (mainMedia.servers ? "flex" : "none") }} scheme={Scheme.LIGHT} fill>
                         <Button className="ws-bg-b" onClick={watchTrailer} textOnly>
                             <i className="fa fa-video"></i>
                             <span>Watch Trailer</span>
@@ -68,41 +64,27 @@ function WatchMedia() {
                     return (<span key={index} onClick={(e) => goToGenre(genre)} className={`${user.color_scheme}-text`}>{genre}, </span>);
                 })}</p>
             </div>
-            {mainMedia.type == "show"
+            {mainMedia.type == "show" && mainMedia.seasons
                 ? (<div className={`seasons-list ${user.color_scheme}-border-top-color`}>
                     <Dropdown className={`${user.color_scheme}-border-1px ${user.color_scheme}-text`} inputClassName={`${user.color_scheme}-border-1px ${user.color_scheme}-text`}
-                        internalInputClassName={`${user.color_scheme}-text`} scheme={user.color_scheme} 
-                        options={mainMedia?.seasons?.map((season, index) => {
-                            return { label: index, value: season.name };
-                        })} selectedOptionIndex={0} matchTargetSize />
+                        internalInputClassName={`${user.color_scheme}-text`} scheme={user.color_scheme}
+                        options={mainMedia?.seasons?.map((season) => {
+                            return { label: season.name, value: season.name, episodes: season.episodes };
+                        })} onSelectOption={(e) => setSelectedSeasonEpisodes(e.option.episodes)} selectedOptionIndex={0} matchTargetSize />
                     <div className="episode-list">
-                        <Button scheme={user.color_scheme} className="ep" outlined fillOnHover>
-                            <i className="fa fa-play"></i>
-                            <span>1. The film Thin</span>
-                        </Button>
-                        <Button scheme={user.color_scheme} className="ep" outlined fillOnHover>
-                            <i className="fa fa-play"></i>
-                            <span>1. The film Thin sdddddddddddd</span>
-                        </Button>
-                        <Button scheme={user.color_scheme} className="ep" outlined fillOnHover>
-                            <i className="fa fa-play"></i>
-                            <span>1. The film Thin       dc</span>
-                        </Button>
-                        <Button scheme={user.color_scheme} className="ep" outlined fillOnHover>
-                            <i className="fa fa-play"></i>
-                            <span>1. The film Thinsss ssss djsghdkjgjhd gjhdg jsg j</span>
-                        </Button>
-                        <Button scheme={user.color_scheme} className="ep" outlined fillOnHover>
-                            <i className="fa fa-play"></i>
-                            <span>1. The film Thinsss ssss djsghdkjgjhd gjhdg jsg j jdtwuydyuiy</span>
-                        </Button>
+                        {selectedSeasonEpisodes.map((episode) => {
+                            return (<Button key={episode.title} scheme={user.color_scheme} className="ep" onClick={() => playMedia(episode)} outlined fillOnHover>
+                                <i className="fa fa-play"></i>
+                                <span>{episode.title}</span>
+                            </Button>);
+                        })}
                     </div>
                 </div>)
                 : null}
-            <div className={`${user.color_scheme}-border-top-color`} 
+            <div className={`${user.color_scheme}-border-top-color`}
                 style={{ flex: 1, borderTopStyle: "solid", background: "black", paddingTop: 20 }}>
                 <span style={{ fontSize: 18, fontWeight: "bold", margin: 20 }}>Similar Titles</span>
-                <div className={`movie-list vertical`} 
+                <div className={`movie-list vertical`}
                     style={{ height: "unset", margin: 0, padding: 15 }}>
                     {(mainMedia?.similarMovies || []).map((movie, index) => {
                         return (<div key={index} onClick={() => goToMovie(movie)} className={`movie-item ${user.color_scheme}`}
@@ -113,21 +95,19 @@ function WatchMedia() {
         </ScrollPanel>
     </div>);
 
-    function testOptions() {
-        return [
-            { label: "Season 1", value: "season-1" },
-            { label: "Season 2", value: "season-1" },
-            { label: "Season 3", value: "season-1" },
-            { label: "Season 4", value: "season-1" },
-            { label: "Season 5", value: "season-1" },
-            { label: "Season 6", value: "season-1" },
-            { label: "Season 7", value: "season-1" },
-        ];
+    function fetchMediaDetails(media) {
+        requestService.getMovieDetail(media.media_link, media.source).then(res => {
+            cMedia = { ...media, ...res.data };
+            setMainMedia(cMedia);
+            if (cMedia.type === "show") setSelectedSeasonEpisodes(cMedia.seasons[0].episodes);
+        }).catch(err => {
+            viewMeConsole.error(err);
+        });
     }
 
     function goToMovie(movie) {
-        const mainMedia = movie;
-        navigate("/watch", { state: { user, mainMedia } });
+        setMainMedia(movie); fetchMediaDetails(movie);
+        //navigate("/watch", { state: { user, media } });
     }
 
     function goToCast(cast) {
@@ -136,6 +116,10 @@ function WatchMedia() {
 
     function goToGenre(genre) {
         navigate("/dashboard", { state: { user, genre } });
+    }
+
+    function goToEpisode(episode) {
+        console.log("EPISODES", episode);
     }
 
     function watchTrailer() {
@@ -156,15 +140,16 @@ function WatchMedia() {
     }
 
     function playMedia(mainMedia) {
-        if (!cMedia || !cMedia.servers) return;
+        mainMedia = mainMedia || cMedia;
+        if (!mainMedia || !mainMedia.servers) return;
         alertDialog({
             style: { minWidth: "50%" },
             message: (<div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
                 <span style={{ marginBottom: 20 }}>Select a server</span>
                 <ButtonGroup scheme={user.color_scheme} direction={Orientation.VERTICAL} fill>
-                    {cMedia.servers.map((server, index) => {
+                    {mainMedia.servers.map((server, index) => {
                         return (<Button key={index} text={server.name} style={{ marginTop: 10 }}
-                            onClick={() => navigateToMediaPlayer(server.link)}/>);
+                            onClick={() => navigateToMediaPlayer(server.link)} />);
                     })}
                 </ButtonGroup>
             </div>),
