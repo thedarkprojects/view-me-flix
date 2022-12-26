@@ -29,17 +29,19 @@ function WatchMedia() {
         });
     }, []);
 
-    return (<div className="watch-mainMedia">
+    return (<div className="watch-media">
         <ScrollPanel className="watch-show" scheme={user.color_scheme}>
             <div className="blured-bg" style={{ backgroundImage: `url('${mainMedia.preview_image?.replace("178x268", "5000x5000")}')` }}></div>
-            <div className="preview" style={{ height: "100vh"/*(mainMedia.type != "show" ? "100%": "initial")*/ }}>
+            <div className="preview" style={{ /*(mainMedia.type != "show" ? "100%": "initial")*/ }}>
                 <div className="header"><span onClick={() => navigate("/dashboard", { state: { user } })}>Back</span></div>
                 <div className="blur" style={{ background: "linear-gradient(to bottom, transparent 0%, black 80%)" }}></div>
                 <img className="poster" src={mainMedia.preview_image?.replace("178x268", "5000x5000")} />
                 <div className="main-controls">
-                    <Button icon="fa fa-play" alignIcon={Alignment.CENTER} text="Play" scheme={user.color_scheme} 
+                    <Button icon={mainMedia.servers ? "fa fa-play" : "fa fa-spinner fa-spin"} 
+                        disabled={mainMedia.servers === undefined}
+                        alignIcon={Alignment.CENTER} text="Play" scheme={user.color_scheme} 
                         onClick={playMedia} fill />
-                    <ButtonGroup scheme={Scheme.LIGHT}fill>
+                    <ButtonGroup style={{ display: (mainMedia.servers ? "flex" : "none") }} scheme={Scheme.LIGHT}fill>
                         <Button className="ws-bg-b" onClick={watchTrailer} textOnly>
                             <i className="fa fa-video"></i>
                             <span>Watch Trailer</span>
@@ -69,7 +71,10 @@ function WatchMedia() {
             {mainMedia.type == "show"
                 ? (<div className={`seasons-list ${user.color_scheme}-border-top-color`}>
                     <Dropdown className={`${user.color_scheme}-border-1px ${user.color_scheme}-text`} inputClassName={`${user.color_scheme}-border-1px ${user.color_scheme}-text`}
-                        internalInputClassName={`${user.color_scheme}-text`} scheme={user.color_scheme} options={testOptions()} selectedOptionIndex={0} matchTargetSize />
+                        internalInputClassName={`${user.color_scheme}-text`} scheme={user.color_scheme} 
+                        options={mainMedia?.seasons?.map((season, index) => {
+                            return { label: index, value: season.name };
+                        })} selectedOptionIndex={0} matchTargetSize />
                     <div className="episode-list">
                         <Button scheme={user.color_scheme} className="ep" outlined fillOnHover>
                             <i className="fa fa-play"></i>
@@ -95,7 +100,7 @@ function WatchMedia() {
                 </div>)
                 : null}
             <div className={`${user.color_scheme}-border-top-color`} 
-                style={{ borderTopStyle: "solid", background: "black", paddingTop: 20 }}>
+                style={{ flex: 1, borderTopStyle: "solid", background: "black", paddingTop: 20 }}>
                 <span style={{ fontSize: 18, fontWeight: "bold", margin: 20 }}>Similar Titles</span>
                 <div className={`movie-list vertical`} 
                     style={{ height: "unset", margin: 0, padding: 15 }}>

@@ -17,6 +17,12 @@ async function fetchSiteData(req, res, isRetry) {
             if (!context) context = await browser.newContext();
             if (!page) page = await context.newPage();
             await page.goto(req.query.url);
+            page.content().then(function (html) {
+                return res.json(useCleanser((req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html));
+            }).catch(function (err) {
+                console.error(err);
+                return res.send([]);
+            });
         } catch (err) {
             if (!isRetry) {
                 context = browser = page = null;
@@ -25,12 +31,6 @@ async function fetchSiteData(req, res, isRetry) {
             }
             return res.send([]);
         }
-        page.content().then(function (html) {
-            return res.json(useCleanser((req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html));
-        }).catch(function (err) {
-            console.error(err);
-            return res.send([]);
-        });
     } else {
         console.log("USING KYOFUUC")
         ffs[(req.query.method || "get").toLowerCase()](req.query.url, { responseType: "text", ...req.query }).then(function (response) {

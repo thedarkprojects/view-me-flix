@@ -28,6 +28,7 @@ module.exports = class Soap2DayUs {
     static cleanMoviePage(html) {
         const result = {};
         const servers = [];
+        const seasons = [];
         const similarMovies = [];
         const root = parse(html);
         result.source = "soap2day.rs";
@@ -65,6 +66,18 @@ module.exports = class Soap2DayUs {
             });
         }
         result.servers = servers;
+
+        const seasonsEls = root.querySelector(".slt-seasons-dropdown")?.querySelectorAll('a');
+        for (const seasonEl of (seasonsEls || [])) {
+            const link = seasonEl;
+            seasons.push({
+                name: link.text.trim(),
+                episodes: [
+
+                ]
+            });
+        }
+        result.seasons = seasons;
         return result;
     }
 
