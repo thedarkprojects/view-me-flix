@@ -15,6 +15,7 @@ const ffs = require("kyofuuc").init({
 export class BaseService {
     
     isTest = false;
+    baseUrl = Database.getMiddlewareUrl();
 
     // should not re init, 
     constructor(isTest) {
@@ -49,18 +50,18 @@ export class BaseService {
     }
 
     buildError(error) {
-        if (!error) error = {};
+        /*if (!error) error = {};
         error.message = error?.response?.data?.message || error?.response?.message || error?.message || "An error occur please try again later";
         error.errors = error?.response?.data?.errors;
 
         error.tMessage = error.message;
-        if (error.error) error.tMessage = Object.values(error.error)[0];
+        if (error.error) error.tMessage = Object.values(error.error)[0];*/
         return error;
     }
 
     mapppedRequest(urlMap) {
         return this.report(Promise.all(Object.keys(urlMap).map(urlKey =>
-            this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=${urlMap[urlKey]}&method=GET`, { mapKey: urlKey, refreshCache: true })))), (responses) => {
+            this.report(this.transport.get(`${this.baseUrl}/ext/json?url=${urlMap[urlKey]}&method=GET`, { mapKey: urlKey, refreshCache: true })))), (responses) => {
                 for (const response of responses) {
                     urlMap[response.config.mapKey] = this.shuffleArray(response.config.mapKey === "Popular" 
                         ? response.data.slice(0, 24) 
@@ -71,7 +72,7 @@ export class BaseService {
     }
 
     aggregateListFromSites(urls) {
-        return this.report(Promise.all(urls.map(url => this.report(this.transport.get(`${window.location.protocol + '//' + window.location.hostname}:3001/ext/json?url=${url}&method=GET`, { refreshCache: false })))), (responses) => {
+        return this.report(Promise.all(urls.map(url => this.report(this.transport.get(`${this.baseUrl}/ext/json?url=${url}&method=GET`, { refreshCache: false })))), (responses) => {
             responses.data = this.resultCombiner(responses);
         });
     }

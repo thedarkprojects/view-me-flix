@@ -1,13 +1,19 @@
 {
-    "name": "onepurse-frontend",
+    "name": "view-me",
     "version": "0.1.0",
     "private": true,
+    "homepage": "./",
+    "main": "desktop/main.js",
+    "author": "theotherguy DarkProjects <theotherguy@getnada.com> (http://thedarkprojects.github.io/)",
+    "description": "Netflix but for pirates 🏴‍☠️☠️",
     "dependencies": {
         "@ronuse/norseu": "^0.0.1",
+        "electron-store": "^8.1.0",
         "express": "^4.18.2",
         "history": "^5.3.0",
         "kyofuuc": "^0.0.2",
         "node-html-parser": "^6.1.4",
+        "playwright": "^1.29.1",
         "react": "^18.1.0",
         "react-dom": "^18.1.0",
         "react-embedded-browser": "^0.1.1",
@@ -18,10 +24,54 @@
     "scripts": {
         "start": "npm run server",
         "client": "react-scripts start",
-        "server": "node src/server/app.js",
+        "server": "node server/main.js",
         "build": "react-scripts build",
         "test": "react-scripts test",
-        "eject": "react-scripts eject"
+        "eject": "react-scripts eject",
+        "desktop": "electron desktop/main.js",
+        "desktop:package": "electron-builder -mwl"
+    },
+    "build": {
+        "appId": "theotherguy.darkprojects.app",
+        "extends": null,
+        "files": [
+            "build/**/*",
+            "desktop/**/*",
+            "server/**/*"
+        ],
+        "directories": {
+            "buildResources": "desktop"
+        },
+        "dmg": {
+            "icon": "desktop/viewme.png",
+            "contents": [
+                {
+                    "x": 130,
+                    "y": 220
+                },
+                {
+                    "x": 410,
+                    "y": 220,
+                    "type": "link",
+                    "path": "/Applications"
+                }
+            ]
+        },
+        "mac": {
+            "icon": "desktop/viewme.png"
+        },
+        "win": {
+            "icon": "desktop/viewme.png"
+        },
+        "linux": {
+            "icon": "desktop/viewme.png",
+            "target": [
+                "deb",
+                "rpm",
+                "AppImage"
+            ],
+            "category": "Entertainment"
+        }
     },
     "eslintConfig": {
         "extends": [
@@ -40,5 +90,9 @@
             "last 1 firefox version",
             "last 1 safari version"
         ]
+    },
+    "devDependencies": {
+        "electron": "^22.0.0",
+        "electron-builder": "^23.6.0"
     }
 }

@@ -8,12 +8,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "onepurse.png",
+      "src": "viewme.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "onepurse.png",
+      "src": "viewme.png",
       "type": "image/png",
       "sizes": "512x512"
     }

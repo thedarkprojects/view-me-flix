@@ -1,2 +1,2 @@
 export { BaseService } from "./BaseService"
-export { RequestsService } from "./RequestsService"
+export { RequestService } from "./RequestService"

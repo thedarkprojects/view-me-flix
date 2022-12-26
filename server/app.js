@@ -1,12 +1,24 @@
 const ffs = require("kyofuuc");
 const express = require('express');
-const { useCleanser } = require("./cleansers");
-const app = express()
-const port = 3001
+const { fetchSiteData } = require("./cleansers");
+const app = express();
+
+
+app.use((err, req, res, next) => {
+    console.log("Middleware Error Hadnling");
+    const errStatus = err.statusCode || 500;
+    const errMsg = err.message || 'Something went wrong';
+    res.status(errStatus).json({
+        success: false,
+        status: errStatus,
+        message: errMsg,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : {}
+    })
+})
 
 app.get('/ext/raw', (req, res) => {
-    if (!req.query.url) return res.send("");
     res.set('Access-Control-Allow-Origin', '*');
+    if (!req.query.url) return res.send("");
     ffs[(req.query.method || "get").toLowerCase()](req.query.url, { responseType: "text", ...req.query }).then(function (response) {
         res.send(response.data)
     }).catch(function (err) {
@@ -15,18 +27,10 @@ app.get('/ext/raw', (req, res) => {
     });
 });
 
-app.get('/ext/json', (req, res) => {
-    if (!req.query.url) return res.send("");
+app.get('/ext/json', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
-    ffs[(req.query.method || "get").toLowerCase()](req.query.url, { responseType: "text", ...req.query }).then(function (response) {
-        if (req.query.clazz === "managed") {
-            return res.json(JSON.parse(response.data));
-        }
-        res.json(useCleanser((req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), response.data));
-    }).catch(function (err) {
-        console.error(err);
-        res.send([]);
-    });
+    if (!req.query.url) return res.send("");
+    await fetchSiteData(req, res);
 });
 
 // client proxies
@@ -60,6 +64,25 @@ app.get('/dashboard', (req, res) => {
     });
 })
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+function startExpressServer(options, cb) {
+    options = options || {};
+    options.port = options.port || 3001;
+    console.log(`view more middleware trying to start on port ${options.port}`);
+    const listener = app.listen(options.port, () => {
+        options.listerner = listener;
+        options.listenAddress = listener.address();
+        options.url = `http://${options.listenAddress.address.replace("::", "[::]")}:${options.listenAddress.port}`;
+        cb(options);
+    }).on('error', function(err) {
+        if (options.useAnotherPort) {
+            options.port++;
+            startExpressServer(options, cb);
+            return;
+        }
+        console.error("START SERVER ERROR", err);
+    });
+}
+
+module.exports = {
+    startExpressServer
+}

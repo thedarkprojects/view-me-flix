@@ -5,7 +5,7 @@ import { InputText } from "@ronuse/norseu/core/form";
 import { Database, viewMeConsole } from "../../utils";
 import { ViewportSensor } from "@ronuse/norseu/sensors";
 import { ScrollPanel } from "@ronuse/norseu/core/panels";
-import { RequestsService } from "../../services/RequestsService";
+import { RequestService } from "../../services/RequestService";
 import { Orientation } from "@ronuse/norseu/core/variables";
 
 function Search(props) {
@@ -13,7 +13,7 @@ function Search(props) {
     const user = props.user;
     const navigate = useNavigate();
     const moviesScrollPanel = React.useRef();
-    const requestService = new RequestsService();
+    const requestService = new RequestService();
     const [currentPage, setCurrentPage] = React.useState(1);
     const [searchResult, setSearchResult] = React.useState([]);
     const [currentlyFetching, setCurrentlyFetching] = React.useState(null);
@@ -37,7 +37,7 @@ function Search(props) {
 
     function goToMovie(movie) {
         const media = movie;
-navigate("/watch", { state: { user, media } });
+        navigate("/watch", { state: { user, media } });
     }
 
     function searchInputEvent(e, page) {

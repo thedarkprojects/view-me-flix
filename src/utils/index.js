@@ -1,7 +1,10 @@
 
-export { Database } from "./Database"
-export { ScrollToTop } from "./ScrollToTop"
-export { ResultAggregator } from "./ResultAggregator"
+
+import _Database from "./Database";
+export { AssetLoader } from "./AssetLoader";
+export { ScrollToTop } from "./ScrollToTop";
+export const Database = _Database;
+export { ResultAggregator } from "./ResultAggregator";
 
 export const viewMeConsole = {
     log: (...args) => console.log("VIEWME.LOG", ...args),

@@ -1,13 +1,10 @@
 
-import green1 from "../assets/images/green1.jpg";
-import green2 from "../assets/images/green2.jpg";
-import plus_add from "../assets/images/plus_add.png";
 
-export const Database = {
+const Database = {
 
     _encryptor: (v) => btoa(v), // base 64 for encryption and decryption, likely move to more secure encryption strategy;
     _decryptor: (v) => atob(v), // base 64 for encryption and decryption, likely move to more secure encryption strategy;
-    _cacheImpl: /*!localStorage.getItem("view.me") ? sessionStorage :*/ localStorage,
+    _cacheImpl: null,
 
     _genres: [
         "Popular",
@@ -30,14 +27,6 @@ export const Database = {
         "News",
         "Coming Soon"
     ],
-
-    // assets
-    getAsset(asset) {
-        if (asset === "green1") return green1;
-        if (asset === "green2") return green2;
-        if (asset === "plus_add") return plus_add;
-        return plus_add;
-    },
 
     /** The Database Encryption Interface */
 
@@ -164,9 +153,20 @@ export const Database = {
         return Database.saveRecords(tableName, records);
     },
 
+    /* Middleware records */
+
+    setMiddlewareUrl(url) {
+        Database.cacheString("view.me.middleware.url", url);
+        return url;
+    },
+
+    getMiddlewareUrl() {
+        return Database.stringFromCache("view.me.middleware.url", "http://127.0.0.1:3001");
+    },
+
     /** User Record */
 
-    getUsers() {
+    getUsers(plus_add) {
         /*return [
             { id: 1, username: "Thecarisma", color_scheme: "red", profile_piture: 'https://avatars.githubusercontent.com/u/14879387' },
             { id: 2, username: "Grace", color_scheme: "green", profile_piture: null },
@@ -181,7 +181,7 @@ export const Database = {
         return users;
     },
 
-    addNewUser(user) {
+    addNewUser(user, plus_add) {
         const users = Database.addToRecord("view.me.users", user);
         users.push({
             id: 0,
@@ -192,14 +192,14 @@ export const Database = {
         return users;
     },
 
-    updateUser(user) {
+    updateUser(user, plus_add) {
         Database.updateInRecord("view.me.users", user);
-        return Database.getUsers();
+        return Database.getUsers(plus_add);
     },
 
-    deleteUser(user) {
+    deleteUser(user, plus_add) {
         Database.deleteFromRecord("view.me.users", user);
-        return Database.getUsers();
+        return Database.getUsers(plus_add);
     },
 
     /** User Record */
@@ -240,3 +240,5 @@ export const Database = {
     getColorHex(scheme) { return Database._tempNorseUColorMap[scheme]; }
 
 }
+
+export default Database;

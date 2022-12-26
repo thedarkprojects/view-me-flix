@@ -1,11 +1,11 @@
 
 import React from "react";
-import { Database, viewMeConsole } from "../../utils";
+import { Database, AssetLoader, viewMeConsole } from "../../utils";
 import { ScrollPanel } from "@ronuse/norseu/core/panels";
 import { Button, ButtonGroup } from "@ronuse/norseu/core/buttons";
 import { Scheme } from "@ronuse/norseu/core/variables";
 import { Link } from "react-router-dom";
-import { RequestsService } from "../../services/RequestsService";
+import { RequestService } from "../../services/RequestService";
 import Genre from "./home/Genre";
 import HomePreviews from "./home/HomePreviews";
 import Favourites from "./home/Favourites";
@@ -16,11 +16,11 @@ import Cast from "./home/Cast";
 function Home(props) {
     
     const { user, genre, cast } = props;
-    const requestService = new RequestsService();
+    const requestService = new RequestService();
     const [homeView, setHomeView] = React.useState("home");
     const [currentCast, setCurrentCast] = React.useState(cast);
     const [currentGenre, setCurrentGenre] = React.useState(genre);
-    const [landingBackgroundImageLink, setLandingBackgroundImageLink] = React.useState(Database.getAsset("green2"));
+    const [landingBackgroundImageLink, setLandingBackgroundImageLink] = React.useState(AssetLoader.getAsset("green2"));
     const relaysProps = {
         user,
         requestService,

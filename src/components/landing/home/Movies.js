@@ -5,8 +5,8 @@ import { Scheme } from "@ronuse/norseu/core/variables";
 import { ViewportSensor } from "@ronuse/norseu/sensors";
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { RequestsService } from "../../../services/RequestsService";
-import { Database, viewMeConsole } from "../../../utils";
+import { RequestService } from "../../../services/RequestService";
+import { Database, AssetLoader, viewMeConsole } from "../../../utils";
 
 let activeMedia;
 
@@ -15,11 +15,11 @@ function Movies(props) {
     const navigate = useNavigate();
     const { user } = props.relaysProps;
     const moviesScrollPanel = React.useRef();
-    const requestService = new RequestsService();
+    const requestService = new RequestService();
     const [currentPage, setCurrentPage] = React.useState(1);
     const [searchResult, setSearchResult] = React.useState([]);
     const [previewIsFavourite, setPreviewIsFavourite] = React.useState(false);
-    const [previewMovie, setPreviewMovie] = React.useState({ preview_image: Database.getAsset("green2") });
+    const [previewMovie, setPreviewMovie] = React.useState({ preview_image: AssetLoader.getAsset("green2") });
 
     React.useEffect(() => {
         fetchMoviesMedias(currentPage);

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { Database, viewMeConsole } from "../utils";
+import { AssetLoader, Database, viewMeConsole } from "../utils";
 import { alertDialog } from "@ronuse/norseu/core/overlay";
 import { Dropdown, InputText } from "@ronuse/norseu/core/form";
 import { Alignment, Scheme } from "@ronuse/norseu/core/variables";
@@ -14,7 +14,7 @@ function SelectUser() {
     const profileUrlRef = React.useRef();
     const colorSchemeRef = React.useRef();
     const [editMode, setEditMode] = React.useState(false);
-    const [users, setUsers] = React.useState(Database.getUsers());
+    const [users, setUsers] = React.useState(Database.getUsers(AssetLoader.getAsset("plus_add")));
     const colorDropdownOptions = Object.keys(Scheme).map((scheme) => {
         return {
             label: scheme,
@@ -87,7 +87,7 @@ function SelectUser() {
                     color_scheme: colorSchemeRef.current.value(),
                     profile_piture: profileUrlRef.current.value(),
                 };
-                setUsers(Database.addNewUser(user));
+                setUsers(Database.addNewUser(user, AssetLoader.getAsset("plus_add")));
                 return false;
             },
         });
@@ -129,7 +129,7 @@ function SelectUser() {
                 user.username = usernameRef.current.value();
                 user.color_scheme = colorSchemeRef.current.value();
                 user.profile_piture = profileUrlRef.current.value();
-                setUsers(Database.updateUser(user));
+                setUsers(Database.updateUser(user, AssetLoader.getAsset("plus_add")));
             }
         });
     }
