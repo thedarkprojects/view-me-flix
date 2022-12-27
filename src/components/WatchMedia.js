@@ -191,7 +191,7 @@ function WatchMedia() {
 
     function navigateToMediaPlayer(media, final_media_link) {
         Database.addToActivelyWatching(user, { ...media, final_media_link });
-        //window.location = final_media_link;
+        window.location = final_media_link;
     }
 
 }
