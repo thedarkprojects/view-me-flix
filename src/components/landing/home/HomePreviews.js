@@ -13,6 +13,7 @@ function HomePreviews(props) {
     const navigate = useNavigate();
     const [previewMovie, setPreviewMovie] = React.useState({});
     const [previewIsFavourite, setPreviewIsFavourite] = React.useState(false);
+    const [activelyWatchingPreview, setActivelyWatchingPreview] = React.useState(false);
     const { user, setLandingBackgroundImageLink, requestService, setCurrentGenre } = props.relaysProps;
     const [moviesByGenres, setMoviesByGenres] = React.useState(Database._genres.reduce((a, v) => ({ ...a, [v]: [] }), {}));
 
@@ -25,10 +26,16 @@ function HomePreviews(props) {
                     : `https://soap2day.rs/genre/${genre}`;
             return acc;
         }, {})).then(res => {
-            setMoviesByGenres(res.data);
-            activeMedia = res.data["Popular"][Math.floor(Math.random() * ((res.data["Popular"].length - 1) - 0 + 1)) + 0] || previewMovie;
+            let genresWithMedias = res.data;
+            const activelyWatching = Database.getActivelyWatchings(user);
+            if (activelyWatching.length) {
+                genresWithMedias = { "Resume Watching": activelyWatching, ...res.data };
+            }
+            setMoviesByGenres(genresWithMedias);
+            activeMedia = genresWithMedias["Popular"][Math.floor(Math.random() * ((genresWithMedias["Popular"].length - 1) - 0 + 1)) + 0] || previewMovie;
             setPreviewMovie(activeMedia);
-            setPreviewIsFavourite(Database.isFavourite(activeMedia));
+            setPreviewIsFavourite(Database.isFavourite(activeMedia, user));
+            setActivelyWatchingPreview(Database.isActivelyWatching(user, activeMedia));
             setLandingBackgroundImageLink(activeMedia.preview_image);
         }).catch(err => {
             viewMeConsole.error(err);
@@ -41,18 +48,22 @@ function HomePreviews(props) {
             <span className="title">{previewMovie.title}</span>
             {/* <span className="genres">Movie</span> */}
             <ButtonGroup className="controls" fill>
-                <Button scheme={Scheme.LIGHT} className="b" onClick={() => { Database.addToFavourite(activeMedia); setPreviewIsFavourite(Database.isFavourite(activeMedia)) }}>
+                <Button scheme={Scheme.LIGHT} className="b" onClick={() => {
+                    Database.addToFavourite(activeMedia, user);
+                    setPreviewIsFavourite(Database.isFavourite(activeMedia, user));
+                    setActivelyWatchingPreview(Database.isActivelyWatching(user, activeMedia));
+                }}>
                     <i className={previewIsFavourite ? `fa fa-minus ${user.color_scheme}-text` : "fa fa-plus"} />
                     {previewIsFavourite
                         ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>Favorite</span>
                         : <span>Favorite</span>}
 
                 </Button>
-                <Button onClick={() => goToMovie(activeMedia)} scheme={user.color_scheme} className="play">
+                <Button onClick={() => goToMovie(activeMedia, activeMedia.final_media_link)} scheme={user.color_scheme} className="play">
                     <i className="fa fa-play" style={{ marginRight: 5 }} />
-                    <span>Play</span>
+                    <span>{activelyWatchingPreview ? "Resume Watching" : "Play"}{" " + (activeMedia?.season_episode_name || "")}{" " + (activeMedia?.season_episode_name || "")}</span>
                 </Button>
-                <Button scheme={Scheme.LIGHT} className="b">
+                <Button onClick={() => { delete activeMedia.final_media_link; goToMovie(activeMedia); }} scheme={Scheme.LIGHT} className="b">
                     <i className="fa fa-info" />
                     <span>Info</span>
                 </Button>
@@ -65,8 +76,10 @@ function HomePreviews(props) {
                     <ScrollPanel className="movie-list" scheme={user.color_scheme}>
                         {[...(moviesByGenres[moviesByGenre] || []), { is_genre: true, genre: moviesByGenre }].map((movie, index) => {
                             return (<div key={index} onMouseEnter={() => {
+                                if (!movie.preview_image) return;
                                 activeMedia = movie; setPreviewMovie(movie);
-                                setPreviewIsFavourite(Database.isFavourite(movie));
+                                setPreviewIsFavourite(Database.isFavourite(movie, user));
+                                setActivelyWatchingPreview(Database.isActivelyWatching(user, movie));
                                 setLandingBackgroundImageLink(movie.preview_image);
                             }}
                                 onClick={() => (movie.is_genre ? setCurrentGenre(movie.genre) : goToMovie(movie))}
@@ -82,7 +95,11 @@ function HomePreviews(props) {
         </div>
     </div>);
 
-    function goToMovie(movie) {
+    function goToMovie(movie, final_media_link) {
+        if (final_media_link) {
+            window.location = final_media_link;
+            return;
+        }
         const media = movie;
         navigate("/watch", { state: { user, media } });
     }

@@ -332,6 +332,7 @@ code {
 
 .home>.content>.sections {
     display: flex;
+    padding-top: 30px;
     flex-direction: column;
 }
 
@@ -376,7 +377,9 @@ code {
 
 .movie-list.vertical {
     height: 100%;
+    padding: 20px;
     flex-wrap: wrap;
+    padding-top: 50px;
     justify-content: flex-start;
 }
 
