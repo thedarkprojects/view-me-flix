@@ -121,7 +121,7 @@ function SelectUser() {
                     cancelLabel: "Cancel",
                     confirmScheme: Scheme.DANGER,
                     onConfirm: () => {
-                        setUsers(Database.deleteUser(user));
+                        setUsers(Database.deleteUser(user, AssetLoader.getAsset("plus_add")));
                     },
                 });
             },

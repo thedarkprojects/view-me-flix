@@ -268,7 +268,7 @@ const Database = {
     /* Color Map */
     
     _tempNorseUColorMap: {
-        "norseu-stateless": "maroon",
+        "norseu-stateless": "",
         "norseu-primary": "#3699ff",
         "norseu-secondary": "#e4e6ef",
         "norseu-success": "#1bc5bd",

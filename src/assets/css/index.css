@@ -21,7 +21,7 @@ code {
 }
 
 .app-name {
-    color: red;
+    color: #2ab59b;
     font-family: 'Kenia';
     text-decoration: none;
 }
@@ -37,7 +37,7 @@ code {
 }
 
 .splash>span {
-    color: red;
+    color: #2ab59b;
     font-size: 400px;
     font-family: 'Kenia';
 }
