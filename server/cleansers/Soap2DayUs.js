@@ -79,7 +79,7 @@ module.exports = class Soap2DayUs {
             const eps = epRoot.querySelectorAll(".nav-link");
             for (const ep of eps) {
                 const epServers = [];
-                const epId = link.getAttribute("data-id");
+                const epId = ep.getAttribute("data-id");
                 const serverRoot = parse((await ffs.get(`https://soap2day.rs/ajax/v2/episode/servers/${epId}`)).body);
                 const serverEls = serverRoot.querySelectorAll(".nav-link");
                 for (const serverEl of serverEls) {

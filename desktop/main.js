@@ -6,10 +6,11 @@ const { startExpressServer } = require('../server/app');
 
 let server;
 const createWindow = (url) => {
-    const win = new BrowserWindow({
+    let win = new BrowserWindow({
         width: 800,
         height: 600,
-        icon: __dirname + '/viewme.ico',
+        autoHideMenuBar: true,
+        icon: __dirname + '/viewme.png',
     });
 
     let loaderLocation = "loader.html";
@@ -20,6 +21,7 @@ const createWindow = (url) => {
     }
 
     let activeView;
+    let lastLoadedUrl = clientLocation;
     let urlBeforePlayer = clientLocation;
     const loadingView = new BrowserView()
     loadingView.setAutoResize({
@@ -34,6 +36,7 @@ const createWindow = (url) => {
 
     win.webContents.on('did-start-loading', (_) => {
         const currentURL = win.webContents.getURL();
+        if (loadingView === win.getBrowserView()) return;
         if (currentURL.includes("file://") && !currentURL.endsWith("/watch")) {
             urlBeforePlayer = currentURL;
             return;
@@ -44,22 +47,23 @@ const createWindow = (url) => {
     });
     win.webContents.on('did-stop-loading', (_) => {
         const currentURL = win.webContents.getURL();
+        if (currentURL === lastLoadedUrl) return;
+        lastLoadedUrl = currentURL;
         if (currentURL.includes("file://")) {
             if (win.getBrowserView() === loadingView) win.setBrowserView(activeView);
             return;
         };
         function removeWebsiteElements(count) {
             console.log("REMOVING PLAYER WEBISITE ELEMENTS", count);
-            win.webContents.executeJavaScript(soap2dayPlayerTrimmer).then((result) => {
-                //console.log("HTML", result, activeView);
-                win.webContents.executeJavaScript(backButtonOnPlayer(urlBeforePlayer)).catch(err => console.error("BACK.BUTTON", err));;
+            win.webContents.executeJavaScript(soap2dayPlayerTrimmer + backButtonOnPlayerHtml(urlBeforePlayer)).then((result) => {
+                console.log("RESULT FROM PLAYER TRIMMER", result);
                 win.setBrowserView(activeView);
             }).catch(err => {
-                if (count < 1) {
+                if (count <= 1) {
                     win.setBrowserView(activeView);
-                    removeWebsiteElements(count+1);
+                    removeWebsiteElements(count + 1);
                     return;
-                } 
+                }
                 console.error(`Retry ${count} times`, err);
             });
         }
@@ -70,9 +74,7 @@ const createWindow = (url) => {
         return { action: "deny" };
     });
     win.on('close', function () {
-        console.log(`Stopping server to completely end process`);
-        if (server) server.close();
-        app.exit(0);
+        win = null;
     });
 }
 
@@ -83,26 +85,45 @@ app.whenReady().then(() => {
     });
 })
 
+app.on('window-all-closed', function () {
+    console.log(`Stopping server to completely end process`);
+    if (server) server.close();
+    app.exit(0);
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
+    app.quit();
+})
+
 const soap2dayPlayerTrimmer = `
-  const getSiblings = n => [...n.parentElement.children].filter(c=>c!=n)
-  function removeElementExcept(survivor) {
+let getSiblings = n => [...n.parentElement.children].filter(c=>c!=n)
+function removeElementExcept(survivor) {
+    if (!survivor) return;
     const parent = survivor.parentElement;
     if (survivor === document || !parent) return;
     const siblings = getSiblings(survivor);
     for (const sibling of siblings) {
-      if (sibling.tagName === 'HEAD') continue;
-      sibling.remove();
+    if (sibling.tagName === 'HEAD') continue;
+    sibling.remove();
     }
     removeElementExcept(parent);
-  }
-  const playerElement = document.getElementsByClassName('watching_player-area')[0];
-  removeElementExcept(playerElement);
-  document.body.style.background = "black";
-  document.documentElement.innerHTML;
+}
+const playerElement = document.getElementsByClassName('watching_player-area')[0];
+removeElementExcept(playerElement);
+document.body.style.background = "black";
+//document.getElementById("overlay-center").remove();
 `;
 
-const backButtonOnPlayer = (url) => {
-    return `document.documentElement.innerHTML += (\`<button onclick='window.history.go(-3); return false;' href='${url}'
-        style='border-radius: 6px; padding: 16px 20px 16px 20px; background: white; position: fixed; top: 20px; left: 20px; z-index: 999;'>Go Back</button>\`)
+const backButtonOnPlayerHtml = (url) => {
+    let html = `document.getElementsByTagName('body')[0].innerHTML += (\`<div style='position: fixed; bottom: 20px; left: 20px; z-index: 999; display: flex; flex-wrap: wrap;'>
+        <button onclick='window.history.go(-3); return false;'
+            style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Back</button>
+        <button onclick='window.location.reload(); return false;'
+            style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Reload</button>
+        <button onclick='window.history.go(-10); return false;'
+            style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Home</button>
+    </div>\`);
+    'done';
     `;
+    return html;
 }

@@ -100,18 +100,35 @@ const Database = {
 
     /** The Database Implementation */
 
+    queryMatch(record, queries, relation = "OR") {
+        relation = relation.toUpperCase();
+        let queryMatcheCount = 0;
+        for (const query of (queries || [])) {
+            query.op = (query.op || "").toLowerCase();
+            if ((query.op === "!=" || query.op === "nq") && (record[query.field] !== query.value)) if (relation === "OR") { return true } else { queryMatcheCount++ };
+            if ((query.op === "LIKE" || query.op === "contains") && (record[query.field].includes(query.value))) if (relation === "OR") { return true } else { queryMatcheCount++ };
+            if ((query.op === "RLIKE" || query.op === "endswith") && (record[query.field].endsWith(query.value))) if (relation === "OR") { return true } else { queryMatcheCount++ };
+            if ((query.op === "LLIKE" || query.op === "startswith") && (record[query.field].startsWith(query.value))) if (relation === "OR") { return true } else { queryMatcheCount++ };
+            if (record[query.field] === query.value) if (relation === "OR") { return true } else { queryMatcheCount++ };
+        }
+        return queryMatcheCount === queries.length;
+    },
+
     saveRecords(tableName, records) {
         Database.cacheObject(tableName, records);
         return records;
     },
 
-    getRecords(tableName) {
-        const records = Database.objectFromCache(tableName, []);
-        return records;
+    getRecords(tableName, queries, relation) {
+        const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
+        if (!queries || !queries.length) {
+            return records;
+        }
+        return records.filter(record => Database.queryMatch(record, queries, relation));
     },
 
-    indexInRecord(tableName, queries) {
-        const records = Database.objectFromCache(tableName, []);
+    indexInRecord(tableName, queries, relation) {
+        const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
         let index = -1;
         for (const query of queries) {
             index = records.findIndex(x => {
@@ -122,17 +139,22 @@ const Database = {
                 if (query.op === "LLIKE" || query.op === "startswith")  return x[query.field].startsWith(query.value);
                 return x[query.field] === query.value;
             });
+            if (index > -1) return index;
         }
         return index;
     },
 
-    findInToRecord(tableName, queries) {
-        const records = Database.objectFromCache(tableName, []);
-        return records[Database.indexInRecord(tableName, queries)];
+    findInRecord(tableName, queries) {
+        const records = Array.isArray(tableName) ? tableName : Database.getRecords(tableName, queries, "AND");
+        return records[0];
+    },
+
+    existInRecord(tableName, queries) {
+        return Database.getRecords(tableName, queries, "AND").length > 0;
     },
 
     addToRecord(tableName, newRecord) {
-        const records = Database.objectFromCache(tableName, []);
+        const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
         newRecord.id = records.length+1;
         records.push(newRecord);
         Database.cacheObject(tableName, records);
@@ -202,27 +224,48 @@ const Database = {
         return Database.getUsers(plus_add);
     },
 
-    /** User Record */
+    /** Favourites Record */
 
-    getFavourites() {
-        return Database.getRecords("view.me.favourites");
+    getFavourites(user) {
+        return Database.getRecords("view.me.favourites", [{ field: "user_id", value: user.id }]);
     },
 
-    isFavourite(media) {
-        return Database.indexInRecord("view.me.favourites", [{ field: "title", value: media.title }]) > -1;
+    isFavourite(media, user) {
+        return Database.existInRecord("view.me.favourites", [{ field: "title", value: media.title }, { field: "user_id", value: user.id }]);
     },
 
-    addToFavourite(media) {
-        const existInRecord = Database.indexInRecord("view.me.favourites", [{ field: "title", value: media.title }]);
-        if (existInRecord > -1) return Database.removeFromFavourite(media, [{ field: "title", value: media.title }]);
+    addToFavourite(media, user) {
+        const existInRecord = Database.existInRecord("view.me.favourites", [{ field: "title", value: media.title }, { field: "user_id", value: user.id }]);
+        if (existInRecord) return Database.removeFromFavourite(media, user, [{ field: "title", value: media.title }, { field: "user_id", value: user.id }]);
+        media.user_id = user.id;
         return Database.addToRecord("view.me.favourites", media);
     },
 
-    removeFromFavourite(media, queries) {
+    removeFromFavourite(media, user, queries) {
         return Database.deleteFromRecord("view.me.favourites", media, queries);
     },
 
-    /* COlor Map */
+    /** Actively Watching Record */
+
+    getActivelyWatchings(user) {
+        return Database.getRecords("view.me.actively-watching", [{ field: "user_id", value: user.id }]);
+    },
+
+    isActivelyWatching(user, media) {
+        const emedia = Database.findInRecord("view.me.actively-watching", [{ field: "title", value: media.title }, { field: "user_id", value: user.id }]);
+        media.final_media_link = emedia?.final_media_link;
+        media.season_episode_name = emedia?.season_episode_name;
+        return emedia != undefined;
+    },
+
+    addToActivelyWatching(user, media) {
+        const existInRecord = Database.existInRecord("view.me.actively-watching", [{ field: "title", value: media.title }, { field: "user_id", value: user.id }]);
+        if (existInRecord) return Database.updateInRecord("view.me.actively-watching", media);;
+        media.user_id = user.id;
+        Database.addToRecord("view.me.actively-watching", media);
+    },
+
+    /* Color Map */
     
     _tempNorseUColorMap: {
         "norseu-stateless": "maroon",
