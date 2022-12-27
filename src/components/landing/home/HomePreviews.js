@@ -71,10 +71,13 @@ function HomePreviews(props) {
         </div>
         <div className="sections" style={{ background: "black" }}>
             {Object.keys(moviesByGenres).map(moviesByGenre => {
-                return (<div className="section norseu-scrollpanel">
+                const medias = moviesByGenres[moviesByGenre] || [];
+                if (!medias || !medias.length) return;
+
+                return (<div key={moviesByGenre} className="section norseu-scrollpanel">
                     <span>{moviesByGenre}</span>
                     <ScrollPanel className="movie-list" scheme={user.color_scheme}>
-                        {[...(moviesByGenres[moviesByGenre] || []), { is_genre: true, genre: moviesByGenre }].map((movie, index) => {
+                        {[...medias, { is_genre: true, genre: moviesByGenre }].map((movie, index) => {
                             return (<div key={index} onMouseEnter={() => {
                                 if (!movie.preview_image) return;
                                 activeMedia = movie; setPreviewMovie(movie);

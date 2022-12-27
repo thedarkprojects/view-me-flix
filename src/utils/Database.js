@@ -157,6 +157,7 @@ const Database = {
         const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
         newRecord.id = records.length+1;
         records.push(newRecord);
+        console.log(">>>>>>>>>>>>", records);
         Database.cacheObject(tableName, records);
         return records;
     },

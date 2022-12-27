@@ -564,6 +564,34 @@ code {
     -webkit-box-orient: vertical;
 }
 
+.settings {
+    padding: 20px;
+}
+
+.settings > .title {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.settings > hr {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.settings > .group {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings > .group > .title {
+    margin-bottom: 10px;
+}
+
+.settings > .group > .section {
+    display: flex;
+    flex-direction: column;
+}
+
 
 /* generall Styles */
 
