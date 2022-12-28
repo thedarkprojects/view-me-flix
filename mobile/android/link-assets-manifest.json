@@ -1,0 +1,61 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "../build/asset-manifest.json",
+      "sha1": "4be3a1f99b075a923ed05ebd4673027f9caf3781"
+    },
+    {
+      "path": "../build/favicon.png",
+      "sha1": "c10917e437e03407c82fab5e1f2b8ee3b3354c20"
+    },
+    {
+      "path": "../build/index.html",
+      "sha1": "767976152053fdd068670033057473ab3d551a24"
+    },
+    {
+      "path": "../build/manifest.json",
+      "sha1": "bb1749ef6398be17737e5b07c6ef5dd3dd9241ab"
+    },
+    {
+      "path": "../build/robots.txt",
+      "sha1": "044ce68f83ee8543475fea16f6e3a73d28a1c6d5"
+    },
+    {
+      "path": "../build/static/css/main.cb74cd84.css",
+      "sha1": "e13d1400864cc71480849afe947bbfabb7defa4b"
+    },
+    {
+      "path": "../build/static/css/main.cb74cd84.css.map",
+      "sha1": "539e7b922c3ff03d50e6e342dd9ff709ceef13a3"
+    },
+    {
+      "path": "../build/static/js/main.9e4612bc.js",
+      "sha1": "9aee80b5c89db90eaa873bcf491e2a23eb2a8aea"
+    },
+    {
+      "path": "../build/static/js/main.9e4612bc.js.LICENSE.txt",
+      "sha1": "7ec24552611fbbc5de0931f046b1ad157861fe26"
+    },
+    {
+      "path": "../build/static/js/main.9e4612bc.js.map",
+      "sha1": "b5b8c3bac8d73eb79fee969abc7d8ed93a88fa9b"
+    },
+    {
+      "path": "../build/static/media/green1.c00eeb50b36c00d4c4f6.jpg",
+      "sha1": "8e057e7995558491a5ce9cbacdcc00f1c539a644"
+    },
+    {
+      "path": "../build/static/media/green2.153a3cb860d301df6694.jpg",
+      "sha1": "dee36998888ed98e10f9e19006f99f91b73abc2a"
+    },
+    {
+      "path": "../build/static/media/netflix_intro_8ad6414cf943281329e7.mp3",
+      "sha1": "69c53f6d9529c0bf40d5ca166580a00f8c196faa"
+    },
+    {
+      "path": "../build/viewme.png",
+      "sha1": "5587c46b6aa897448997bbee9274eb5477d2dc6a"
+    }
+  ]
+}
