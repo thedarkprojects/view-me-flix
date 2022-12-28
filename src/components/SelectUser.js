@@ -26,7 +26,7 @@ function SelectUser() {
     return (<div className="select-user">
         <Link to="/" className="app-name" style={{ fontSize: 50 }}>VM</Link>
         <div className="users-panel">
-            <span style={{ fontSize: 40 }}>Who's watching?</span>
+            <span style={{ fontSize: 40, textAlign: "center" }}>Who's watching?</span>
             <div className="users-list">
                 {users.map(user => {
                     let style = { borderColor: Database.getColorHex(user.color_scheme), backgroundImage: `url('${user.profile_piture}')` };

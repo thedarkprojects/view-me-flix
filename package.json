@@ -6,6 +6,19 @@
     "main": "desktop/main.js",
     "author": "theotherguy DarkProjects <theotherguy@getnada.com> (http://thedarkprojects.github.io/)",
     "description": "Netflix but for pirates 🏴‍☠️☠️",
+    "scripts": {
+        "start": "npm run server",
+        "client": "react-scripts start",
+        "server": "node server/main.js",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject",
+        "mobile:android": "cd mobile & npm run android",
+        "mobile:ios": "cd mobile & npm run ios",
+        "mobile:start": "cd mobile & npm run start",
+        "desktop:start": "electron desktop/main.js",
+        "desktop:package": "electron-builder -mwl"
+    },
     "dependencies": {
         "@ronuse/norseu": "^0.0.1",
         "electron-store": "^8.1.0",
@@ -16,20 +29,13 @@
         "playwright": "^1.29.1",
         "react": "^18.1.0",
         "react-dom": "^18.1.0",
-        "react-embedded-browser": "^0.1.1",
         "react-router-dom": "^6.3.0",
         "react-scripts": "5.0.1",
         "web-vitals": "^2.1.4"
     },
-    "scripts": {
-        "start": "npm run server",
-        "client": "react-scripts start",
-        "server": "node server/main.js",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject",
-        "desktop": "electron desktop/main.js",
-        "desktop:package": "electron-builder -mwl"
+    "devDependencies": {
+        "electron": "^22.0.0",
+        "electron-builder": "^23.6.0"
     },
     "build": {
         "appId": "theotherguy.darkprojects.app",
@@ -90,9 +96,5 @@
             "last 1 firefox version",
             "last 1 safari version"
         ]
-    },
-    "devDependencies": {
-        "electron": "^22.0.0",
-        "electron-builder": "^23.6.0"
     }
 }
