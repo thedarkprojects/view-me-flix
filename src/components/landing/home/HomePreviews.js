@@ -19,20 +19,20 @@ function HomePreviews(props) {
 
     React.useEffect(() => {
         requestService.mapppedRequest(Object.keys(moviesByGenres).reduce((acc, genre) => {
-            acc[genre] = genre == "Popular"
-                ? "https://soap2day.rs/home"
-                : genre == "Coming Soon"
-                    ? "https://soap2day.rs/coming-soon"
-                    : `https://soap2day.rs/genre/${genre}`;
+            acc[genre] = requestService.getPopularComingSoonOrGenreLink(genre);
             return acc;
-        }, {})).then(res => {
+        }, {}), { slice: 100 }, true).then(res => {
             let genresWithMedias = res.data;
             const activelyWatching = Database.getActivelyWatchings(user);
             if (activelyWatching.length) {
                 genresWithMedias = { "Resume Watching": activelyWatching, ...res.data };
             }
+            const previewRollete = (genresWithMedias["Popular"] && genresWithMedias["Popular"].length) 
+                ? genresWithMedias["Popular"] 
+                : genresWithMedias["Resume Watching"];
+            if (!previewRollete) return;
             setMoviesByGenres(genresWithMedias);
-            activeMedia = genresWithMedias["Popular"][Math.floor(Math.random() * ((genresWithMedias["Popular"].length - 1) - 0 + 1)) + 0] || previewMovie;
+            activeMedia = previewRollete[Math.floor(Math.random() * ((previewRollete.length - 1) - 0 + 1)) + 0] || previewMovie;
             setPreviewMovie(activeMedia);
             setPreviewIsFavourite(Database.isFavourite(activeMedia, user));
             setActivelyWatchingPreview(Database.isActivelyWatching(user, activeMedia));
@@ -61,7 +61,7 @@ function HomePreviews(props) {
                 </Button>
                 <Button onClick={() => goToMovie(activeMedia, activeMedia.final_media_link)} scheme={user.color_scheme} className="play">
                     <i className="fa fa-play" style={{ marginRight: 5 }} />
-                    <span>{activelyWatchingPreview ? "Resume Watching" : "Play"}{" " + (activeMedia?.season_episode_name || "")}{" " + (activeMedia?.season_episode_name || "")}</span>
+                    <span>{activelyWatchingPreview ? "Resume Watching" : "Play"}{" " + (activeMedia?.season_episode_name || "")}</span>
                 </Button>
                 <Button onClick={() => { delete activeMedia.final_media_link; goToMovie(activeMedia); }} scheme={Scheme.LIGHT} className="b">
                     <i className="fa fa-info" />
@@ -72,7 +72,7 @@ function HomePreviews(props) {
         <div className="sections" style={{ background: "black" }}>
             {Object.keys(moviesByGenres).map(moviesByGenre => {
                 const medias = moviesByGenres[moviesByGenre] || [];
-                if (!medias || !medias.length) return;
+                if (previewMovie.title && (!medias || !medias.length)) return;
 
                 return (<div key={moviesByGenre} className="section norseu-scrollpanel">
                     <span>{moviesByGenre}</span>

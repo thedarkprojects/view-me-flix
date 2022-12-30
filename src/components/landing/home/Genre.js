@@ -16,7 +16,7 @@ function Genre(props) {
     const genre = props.genre;
     const navigate = useNavigate();
     const moviesScrollPanel = React.useRef();
-    const requestService = new RequestService();
+    const requestService = new RequestService(user);
     const [currentPage, setCurrentPage] = React.useState(1);
     const [searchResult, setSearchResult] = React.useState([]);
     const [previewIsFavourite, setPreviewIsFavourite] = React.useState(false);

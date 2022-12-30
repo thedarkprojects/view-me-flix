@@ -11,9 +11,8 @@ function Splash() {
     const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
 
     React.useEffect(() => {
-        console.log("||||||>>>>>>", decodeURIComponent(window.location.search), "--", searchParams.get("middlewareurl") || "http://127.0.0.1:3001");
         Database.setMiddlewareUrl(searchParams.get("middlewareurl") || "http://127.0.0.1:3001");
-        setTimeout(() => splashSpan.current.classList.add("splash-animation") ||  playButton.current.click(), 1500);
+        setTimeout(() => splashSpan.current.classList.add("splash-animation") /*||  playButton.current.click()*/, 1500);
         setTimeout(() => navigate("/select-user"), 4000);
     });
 

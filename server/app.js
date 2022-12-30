@@ -1,3 +1,4 @@
+const fs = require('fs');
 const ffs = require("kyofuuc");
 const express = require('express');
 const { fetchSiteData } = require("./cleansers");
@@ -19,50 +20,57 @@ app.use((err, req, res, next) => {
 app.get('/ext/raw', (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
     if (!req.query.url) return res.send("");
-    ffs[(req.query.method || "get").toLowerCase()](req.query.url, { responseType: "text", ...req.query }).then(function (response) {
+    ffs[(req.query.method || "get").toLowerCase()](req.query.url, { responseType: "arraybuffer", ...req.query }).then(function (response) {
+        if (req.query.content_type) res.set('Content-Type', req.query.content_type);
         res.send(response.data)
     }).catch(function (err) {
         console.error(err);
-        res.send(err);
+        res.send(err.message);
     });
 });
 
 app.get('/ext/json', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
-    if (!req.query.url) return res.send("");
+    if (!req.query.url) return res.json([]);
     await fetchSiteData(req, res);
 });
 
-// client proxies
+app.get('/favicon.ico', (req, res) => res.send(`success`));
 
-function getClientUrl(url, req, res) {
+
+// tests
+
+app.get('/mediaplugin/plugin/install', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
-    ffs.get(url, { responseType: "text", ...req.query }).then(function (response) {
-        res.send(response.data)
+    ffs.get(req.query.scrapper_class_location, { responseType: "text" }).then(function (response) {
+        var stream = fs.createWriteStream(`server/cleansers/mediaplugins/${req.query.name}.js`);
+        stream.once('open', function () {
+            stream.write(response.data);
+            stream.end();
+        });
+        ffs.get(req.query.player_injection_script_location, { responseType: "text" }).then(function (response) {
+            var stream = fs.createWriteStream(`server/cleansers/mediaplugins/${req.query.name}.player.js`);
+            stream.once('open', function () {
+                stream.write(response.data);
+                stream.end();
+            });
+            res.send("{ success: true }")
+        }).catch(function (err) {
+            console.error(err);
+            res.send(err.message);
+        });
     }).catch(function (err) {
         console.error(err);
-        res.send("Error: the vm client is not started");
+        res.send(err.message);
     });
-}
-
-app.get('/client', (req, res) => {
-    const url = req.protocol + '://' + req.get('host').replace("3001", "3000");
-    res.send(`<body style="margin: 0px;"><iframe style="width: 100vw; height: 100vh; border: none;" src="${url}"></iframe></body>`)
 });
 
-app.get('/**', (req, res) => {
-    const url = req.protocol + '://' + req.get('host').replace("3001", "3000") + req.originalUrl;
-    getClientUrl(url, req, res);
+app.get('/mediaplugin/plugin/uninstall', async (req, res) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    fs.unlink(`server/cleansers/mediaplugins/${req.query.name}.js`, (a, b) => console.log(a, b));
+    fs.unlink(`server/cleansers/mediaplugins/${req.query.name}.player.js`, (a, b) => console.log(a, b));
+    res.send("{ success: true }");
 });
-
-app.get('/dashboard', (req, res) => {
-    ffs.get("https://soap2day.rs/movie", { responseType: "text" }).then(function (response) {
-        console.log(response);
-        res.send(response.data)
-    }).catch(function (err) {
-        console.log('Fetch Error :-S', err);
-    });
-})
 
 function startExpressServer(options, cb) {
     options = options || {};
@@ -86,3 +94,4 @@ function startExpressServer(options, cb) {
 module.exports = {
     startExpressServer
 }
+

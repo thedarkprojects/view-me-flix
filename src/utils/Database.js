@@ -1,9 +1,10 @@
 
+const lzString = require('lz-string');
 
 const Database = {
 
-    _encryptor: (v) => btoa(v), // base 64 for encryption and decryption, likely move to more secure encryption strategy;
-    _decryptor: (v) => atob(v), // base 64 for encryption and decryption, likely move to more secure encryption strategy;
+    _encryptor: (v) => lzString.compress(v),
+    _decryptor: (v) => lzString.decompress(v),
     _cacheImpl: null,
 
     _genres: [
@@ -25,7 +26,48 @@ const Database = {
         "Music",
         "Mystery",
         "News",
-        "Coming Soon"
+        "Coming Soon",
+
+        "Shounen"
+    ],
+
+    _mediaSources: [
+        {
+            active: true,
+            name: "Soap2day.rs",
+            author: "Theotherguy",
+            base_url: "https://soap2day.rs",
+            scrapper_class_name: "Soap2DayUs",
+            scrapper_class_location: "https://github-link.js.file",
+            player_injection_script_location: "https://github-link.js.file",
+            urls: {
+                popular: "https://soap2day.rs/home",
+                movies: "https://soap2day.rs/movie",
+                cast: "https://soap2day.rs/cast/{0}",
+                genre: "https://soap2day.rs/genre/{0}",
+                tv_shows: "https://soap2day.rs/tv-show",
+                search: "https://soap2day.rs/search/{0}",
+                coming_soon: "https://soap2day.rs/coming-soon",
+            }
+        },
+        {
+            active: false,
+            name: "w5.123animes.mobi",
+            author: "Theotherguy",
+            base_url: "https://w5.123animes.mobi",
+            scrapper_class_name: "W5123Animes",
+            scrapper_class_location: "https://github-link.js.file",
+            player_injection_script_location: "https://github-link.js.file",
+            urls: {
+                popular: "https://w5.123animes.mobi/home",
+                genre: "https://w5.123animes.mobi/genere/{0}",
+                movies: "https://w5.123animes.mobi/type/movies",
+                cast: "https://w5.123animes.mobi/search?keyword={0}",
+                tv_shows: "https://w5.123animes.mobi/type/tv series",
+                search: "https://w5.123animes.mobi/search?keyword={0}",
+                coming_soon: "https://w5.123animes.mobi/status/upcoming",
+            }
+        }
     ],
 
     /** The Database Encryption Interface */
@@ -157,7 +199,6 @@ const Database = {
         const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
         newRecord.id = records.length+1;
         records.push(newRecord);
-        console.log(">>>>>>>>>>>>", records);
         Database.cacheObject(tableName, records);
         return records;
     },
@@ -254,8 +295,7 @@ const Database = {
 
     isActivelyWatching(user, media) {
         const emedia = Database.findInRecord("view.me.actively-watching", [{ field: "title", value: media.title }, { field: "user_id", value: user.id }]);
-        media.final_media_link = emedia?.final_media_link;
-        media.season_episode_name = emedia?.season_episode_name;
+        if (emedia) Object.keys(emedia).forEach(key => media[key] = emedia[key]);
         return emedia != undefined;
     },
 
@@ -264,6 +304,80 @@ const Database = {
         if (existInRecord) return Database.updateInRecord("view.me.actively-watching", media);;
         media.user_id = user.id;
         Database.addToRecord("view.me.actively-watching", media);
+    },
+
+    /** Settings - Media Sources */
+
+    ___CachedUrls: {},
+
+    getMediaSources(user, queries = [], failFast) {
+        let records = Database.getRecords("view.me.settings.media.sources", [{ field: "user_id", value: user.id }, ...queries], "AND");
+        if (!records || !records.length) {
+            if (failFast) return records;
+            records = Database._mediaSources;
+            records.forEach(record => {
+                record.user_id = user.id;
+                Database.addToRecord("view.me.settings.media.sources", record);
+            });
+        }
+        return records;
+    },
+
+    addMediaSource(user, mediaSource) {
+        mediaSource.user_id = user.id;
+        return Database.addToRecord("view.me.settings.media.sources", mediaSource);
+    },
+
+    removeMediaSource(user, mediaSource) {
+        return Database.deleteFromRecord("view.me.settings.media.sources", mediaSource);
+    },
+
+    toggleMediaSource(user, mediaSource, active) {
+        mediaSource.active = active;
+        Database.updateInRecord("view.me.settings.media.sources", mediaSource);
+        delete Database.___CachedUrls[user.id];
+        window.location.reload();
+    },
+
+    getMediaUrls(user) {
+        if (Database.___CachedUrls[user.id]) return Database.___CachedUrls[user.id];
+        let mediaSources = Database.getMediaSources(user);
+        mediaSources = mediaSources.reduce((acc, mediaSource) => {
+            if (!mediaSource.active) return acc;
+            const mediaSourceUrls = mediaSource.urls;
+            Object.keys(mediaSourceUrls).map(urlKey => {
+                if (!acc[urlKey]) acc[urlKey] = [];
+                acc[urlKey].push(`null&clazz=${mediaSource.scrapper_class_name}&url=${mediaSourceUrls[urlKey]}`);
+            });
+            return acc;
+        }, {});
+        if (!mediaSources.genre) return { popular: [], genre: [], movies: [],
+            cast: [], tv_shows: [], search: [], coming_soon: [],
+        };
+        Database.___CachedUrls[user.id] = mediaSources;
+        return Database.___CachedUrls[user.id];
+    },
+
+    /* Settings - Langauge */
+
+    __DefaultLanguage: {
+        done: "Done",
+        cancel: "Cancel",
+        username: "Username",
+        add_user: "Add User",
+        color_scheme: "Color Scheme",
+        remove_email: "Remove Email",
+        add_new_user: "Add new user",
+        who_s_watching: "Who's watching?",
+        manage_profiles: "Manage Profiles",
+        update_user_account: "Update User Account",
+        delete_user_account: "Delete User Account",
+        err_username_requires: "Error: username required",
+        profile_picture_url: "Profile picture Url (optional)",
+    },
+
+    getLanguage(user) {
+        return Database.__DefaultLanguage;
     },
 
     /* Color Map */
