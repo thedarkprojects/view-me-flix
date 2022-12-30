@@ -13,7 +13,7 @@ function Search(props) {
     const user = props.user;
     const navigate = useNavigate();
     const moviesScrollPanel = React.useRef();
-    const requestService = new RequestService();
+    const requestService = new RequestService(user);
     const [currentPage, setCurrentPage] = React.useState(1);
     const [searchResult, setSearchResult] = React.useState([]);
     const [currentlyFetching, setCurrentlyFetching] = React.useState(null);

@@ -592,6 +592,22 @@ code {
     flex-direction: column;
 }
 
+.ms-list {
+    width: 100%;
+    display: flex;
+    margin-bottom: 10px;
+    flex-direction: column;
+}
+
+.ms-list > .item {
+    align-items: center;
+    justify-content: space-between;
+    display: flex;
+}
+
+.ms-list > .item > button {
+    margin-left: 20px;
+}
 
 /* generall Styles */
 

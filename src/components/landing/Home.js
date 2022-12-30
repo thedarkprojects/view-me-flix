@@ -12,11 +12,12 @@ import Favourites from "./home/Favourites";
 import Movies from "./home/Movies";
 import TvShows from "./home/TvShows";
 import Cast from "./home/Cast";
+import { alertDialog } from "@ronuse/norseu/core/overlay";
 
 function Home(props) {
     
     const { user, genre, cast } = props;
-    const requestService = new RequestService();
+    const requestService = new RequestService(user);
     const [homeView, setHomeView] = React.useState("home");
     const [currentCast, setCurrentCast] = React.useState(cast);
     const [currentGenre, setCurrentGenre] = React.useState(genre);
@@ -26,11 +27,19 @@ function Home(props) {
         requestService,
         setCurrentGenre,
         setLandingBackgroundImageLink
-    }
+    };
 
     React.useEffect(() => {
         if (currentGenre) {
             return;
+        }
+        if (!Database.getMediaUrls(user).genre.length) {
+            alertDialog({
+                style: { maxWidth: 300 },
+                message: <pr>You do not have any media source activated therefor no media will be available for viewing<br/><br/></pr>,
+                confirmLabel: "Close",
+                confirmScheme: user.color_scheme
+            });
         }
     }, []);
 

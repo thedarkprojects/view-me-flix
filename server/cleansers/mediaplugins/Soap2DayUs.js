@@ -9,7 +9,7 @@ module.exports = class Soap2DayUs {
         return part.startsWith("/") ? `https://soap2day.rs${part}` : part;
     }
 
-    static cleanMoviesList(html) {
+    static cleanMoviesList(html, url, cb) {
         const result = [];
         const root = parse(html);
         const movies = root.querySelectorAll('.flw-item');
@@ -24,11 +24,11 @@ module.exports = class Soap2DayUs {
                 preview_image: movie.querySelector('img').getAttribute("data-src")
             });
         }
-        return result;
+        cb(result);
     }
 
     // base
-    static async cleanMoviePage(html, url) {
+    static async cleanMoviePage(html, url, cb) {
         const result = {};
         const servers = [];
         const seasons = [];
@@ -72,11 +72,56 @@ module.exports = class Soap2DayUs {
 
         const seasonsEls = root.querySelector(".slt-seasons-dropdown")?.querySelectorAll('a');
         for (const seasonEl of (seasonsEls || [])) {
-            const episodes = [];
             const link = seasonEl;
             const seasonId = link.getAttribute("data-id");
-            const epRoot = parse((await ffs.get(`https://soap2day.rs/ajax/v2/season/episodes/${seasonId}`)).body);
-            const eps = epRoot.querySelectorAll(".nav-link");
+            seasons.push({
+                seasonId,
+                name: link.text.trim(),
+                episodes: [],
+                episodes_link: `https://soap2day.rs/ajax/v2/season/episodes/${seasonId}`
+            });
+        }
+
+        let responseCounter = seasons.length;
+        function resportResponse() {
+            if (responseCounter <= 0) cb(result);
+            //console.log("COUNTER", responseCounter);
+        }
+        // WHY? for speed sake dont want to wait 5 minute and above to fetch series
+        // with over 20 seasons, call the requests in threads then report on complete
+        Promise.all(seasons.map((season, index) => ffs.get(season.episodes_link, { index }))).then(responses => {
+            responseCounter -= seasons.length;
+            responses.forEach((res, index) => {
+                const epRoot = parse(res.body);
+                const eps = epRoot.querySelectorAll(".nav-link");
+                responseCounter += eps.length;
+                eps.forEach((ep, eindex) => {
+                    seasons[res.config.index].episodes.push({
+                        title: ep.text.trim(), servers: []
+                    });
+                    const epId = ep.getAttribute("data-id");
+                    ffs.get(`https://soap2day.rs/ajax/v2/episode/servers/${epId}`, { eindex }).then((sres) => {
+                        const epServers = [];
+                        responseCounter -= 1;
+                        const serverRoot = parse(sres.body);
+                        const serverEls = serverRoot.querySelectorAll(".nav-link");
+                        serverEls.forEach((serverEl, sindex) => {
+                            const linkId = serverEl.getAttribute("data-id");
+                            epServers.push({
+                                name: serverEl.text.trim(),
+                                link: url.replace(/\/tv\//, '/watch-tv/') + "." + linkId
+                            });
+                        });
+
+                        seasons[res.config.index].episodes[sres.config.eindex].servers = epServers;
+                        resportResponse();
+                    }).catch(eerr => {
+                        responseCounter -= 1; resportResponse();
+                        console.error("FETCH SOAP2DAY.RS EPISODES.SERVER", eerr);
+                    });
+                })
+            });
+            /*
             for (const ep of eps) {
                 const epServers = [];
                 const epId = ep.getAttribute("data-id");
@@ -93,15 +138,14 @@ module.exports = class Soap2DayUs {
                     title: ep.text.trim(),
                     servers: epServers
                 });
-            }
-            seasons.push({
-                seasonId,
-                name: link.text.trim(),
-                episodes
-            });
-        }
+            }*/
+        }).catch(err => {
+            console.error("FETCH SOAP2DAY.RS EPISODES", err);
+            responseCounter -= seasons.length; resportResponse();
+        });
+
         result.seasons = seasons;
-        return result;
+        resportResponse();
     }
 
 }

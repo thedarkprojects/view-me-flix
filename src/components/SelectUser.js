@@ -26,7 +26,7 @@ function SelectUser() {
     return (<div className="select-user">
         <Link to="/" className="app-name" style={{ fontSize: 50 }}>VM</Link>
         <div className="users-panel">
-            <span style={{ fontSize: 40, textAlign: "center" }}>Who's watching?</span>
+            <span style={{ fontSize: 40, textAlign: "center" }}>{window.viewmore.i18nData.who_s_watching}</span>
             <div className="users-list">
                 {users.map(user => {
                     let style = { borderColor: Database.getColorHex(user.color_scheme), backgroundImage: `url('${user.profile_piture}')` };
@@ -44,7 +44,7 @@ function SelectUser() {
                     </div>
                 })}
             </div>
-            <button onClick={removeUserAccount} className="skeleton-button" style={{ marginTop: 30 }}>{!editMode ? "Manage Profiles" : "Done"}</button>
+            <button onClick={removeUserAccount} className="skeleton-button" style={{ marginTop: 30 }}>{!editMode ? window.viewmore.i18nData.manage_profiles : window.viewmore.i18nData.done}</button>
         </div>
     </div>);
 
@@ -65,21 +65,21 @@ function SelectUser() {
         alertDialog({
             style: { minWidth: "30%" },
             message: (<div className="add-user-dialog">
-                <span>Add new user</span>
-                <InputText label="Username" ref={usernameRef} placeholder="" scheme={Scheme.LIGHT} fill />
-                <Dropdown ref={colorSchemeRef} label="Color Scheme" scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill selectedOptionIndex={3} />
-                <InputText label="Profile picture Url (optional)" ref={profileUrlRef} placeholder="" scheme={Scheme.LIGHT} fill />
+                <span>{window.viewmore.i18nData.add_new_user}</span>
+                <InputText label={window.viewmore.i18nData.username} ref={usernameRef} placeholder="" scheme={Scheme.LIGHT} fill />
+                <Dropdown ref={colorSchemeRef} label={window.viewmore.i18nData.color_scheme} scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill selectedOptionIndex={3} />
+                <InputText label={window.viewmore.i18nData.profile_picture_url} ref={profileUrlRef} placeholder="" scheme={Scheme.LIGHT} fill />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>),
-            confirmLabel: "Add User",
-            cancelLabel: "Cancel",
+            confirmLabel: window.viewmore.i18nData.add_user,
+            cancelLabel: window.viewmore.i18nData.cancel,
             confirmScheme: Scheme.SUCCESS,
             cancelScheme: Scheme.SECONDARY,
             scheme: Scheme.DANGER,
             alignFooter: Alignment.CENTER,
             onConfirm: () => {
                 if (!usernameRef.current.value()) {
-                    addErrorRef.current.innerText = "Error: username required";
+                    addErrorRef.current.innerText = window.viewmore.i18nData.err_username_requires;
                     return true;
                 }
                 const user = {
@@ -98,16 +98,16 @@ function SelectUser() {
         alertDialog({
             style: { minWidth: "30%" },
             message: (<div className="add-user-dialog">
-                <span>Update User Account</span>
-                <InputText ref={usernameRef} label="Username" scheme={Scheme.LIGHT} defaultValue={user.username} fill />
-                <Dropdown ref={colorSchemeRef} label="Color Scheme" scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill
+                <span>{window.viewmore.i18nData.update_user_account}</span>
+                <InputText ref={usernameRef} label={window.viewmore.i18nData.username} scheme={Scheme.LIGHT} defaultValue={user.username} fill />
+                <Dropdown ref={colorSchemeRef} label={window.viewmore.i18nData.color_scheme} scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill
                     selectedOptionIndex={colorDropdownOptions.findIndex(x => x.value === user.color_scheme)} />
-                <InputText ref={profileUrlRef} label="Profile picture Url (optional)" defaultValue={user.profile_piture} scheme={Scheme.LIGHT} fill />
+                <InputText ref={profileUrlRef} label={window.viewmore.i18nData.profile_picture_url} defaultValue={user.profile_piture} scheme={Scheme.LIGHT} fill />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>),
             alignFooter: Alignment.CENTER,
-            confirmLabel: "Delete User Account",
-            cancelLabel: "Done",
+            confirmLabel: window.viewmore.i18nData.delete_user_account,
+            cancelLabel: window.viewmore.i18nData.done,
             confirmScheme: Scheme.DANGER,
             cancelScheme: Scheme.SECONDARY,
             onConfirm: () => {
@@ -117,8 +117,8 @@ function SelectUser() {
                         Your watch and movie data will be deleted.
                     </p>),
                     icon: "fa fa-trash-alt",
-                    confirmLabel: "Remove Email",
-                    cancelLabel: "Cancel",
+                    confirmLabel: window.viewmore.i18nData.remove_email,
+                    cancelLabel: window.viewmore.i18nData.cancel,
                     confirmScheme: Scheme.DANGER,
                     onConfirm: () => {
                         setUsers(Database.deleteUser(user, AssetLoader.getAsset("plus_add")));

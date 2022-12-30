@@ -16,11 +16,11 @@ function WatchMedia() {
     const navigate = useNavigate();
     const location = useLocation();
     const { user, media } = location.state;
-    const requestService = new RequestService();
+    const requestService = new RequestService(user);
     const [mainMedia, setMainMedia] = React.useState(media);
     const [isFavourite, setIsFavourite] = React.useState(Database.isFavourite(mainMedia, user));
-    const [selectedSeasonEpisodes, setSelectedSeasonEpisodes] = React.useState(mainMedia.type === "show" ? ((mainMedia?.seasons) ? mainMedia?.seasons[0].episodes : []) : []);
     const [isActivelyWatching, setIsActivelyWatching] = React.useState(Database.isActivelyWatching(user, mainMedia));
+    const [selectedSeasonEpisodes, setSelectedSeasonEpisodes] = React.useState(mainMedia.type === "show" ? ((mainMedia?.seasons) ? mainMedia?.seasons[0].episodes : []) : []);
 
     React.useEffect(() => {
         cMedia = mainMedia;
