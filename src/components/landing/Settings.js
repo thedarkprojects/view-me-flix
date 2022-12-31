@@ -1,6 +1,6 @@
 
 import { Button } from "@ronuse/norseu/core/buttons";
-import { Checkbox, TextArea } from "@ronuse/norseu/core/form";
+import { Checkbox, InputText, TextArea } from "@ronuse/norseu/core/form";
 import { alertDialog, loadingDialog } from "@ronuse/norseu/core/overlay";
 import { ScrollPanel } from "@ronuse/norseu/core/panels";
 import { Alignment, Scheme } from "@ronuse/norseu/core/variables";
@@ -12,8 +12,13 @@ function Settings(props) {
 
     const { user } = props;
     const mediaSourceTextArea = React.useRef();
+    const pluginHostInputRef = React.useRef();
     const requestService = new RequestService(user);
     const [mediaSources, setMediaSources] = React.useState(Database.getMediaSources(user));
+
+    React.useEffect(() => {
+        //console.log("USEEREE", user)
+    });
 
     return (<ScrollPanel className="settings">
         <span className="title">Settings</span>
@@ -24,6 +29,8 @@ function Settings(props) {
         <hr style={{ display: "none" }}/>
         <div className="group" style={{ marginTop: 30 }}>
             <span className="title">Media Sources</span>
+            <InputText style={{ marginBottom: 25, marginTop: 10 }} ref={pluginHostInputRef}
+                inputStyle={{ marginTop: 5 }} label="Plugin Host" defaultValue={Database.getPluginHost(user)} fill/>
             <div className="section">
                 {mediaSources.map(mediaSource => <Checkbox scheme={user.color_scheme} 
                     checked={mediaSource.active} label={mediaSource.name} 
@@ -56,18 +63,19 @@ function Settings(props) {
         loadingDialog({}, {
             loadingIcon: "fas fa-spinner fa-pulse",
             onLoading: (params, dialog) => {
-                requestService.getMediaPlugins().then((res) => {
+                requestService.getMediaPlugins(pluginHostInputRef.current.value()).then((res) => {
+                    Database.updatePluginHost(user, res.config.url);
                     dialog.update({
                         style: { minWidth: "30%" },
                         message: (<div className="ms-list">
-                                <p style={{ marginTop: 0, marginBottom: 10, fontWeight: "bold" }}>Available Media Sources</p>
+                                <p style={{ marginTop: 0, marginBottom: 10, fontWeight: "bold" }}>Available Media Plugins</p>
                                 {res.data.media_plugins.map(media_plugin => {
                                     let installedCopy = Database.getMediaSources(user, [{ field: "name", value: media_plugin.name }], true);
                                     installedCopy = (installedCopy.length ? installedCopy[0] : null);
                                     return (<div className="item">
                                         <span>{media_plugin.name} ({media_plugin.base_url})</span>
                                         <Button scheme={user.color_scheme} text={installedCopy ? "Uninstall" : "Install"} 
-                                            onClick={() => uninstallInstallMediaPlugin(media_plugin, installedCopy)} textOnly/>
+                                            onClick={() => uninstallInstallMediaPlugin(dialog, media_plugin, installedCopy)} textOnly/>
                                     </div>);
                                 })}
                             </div>),
@@ -87,15 +95,39 @@ function Settings(props) {
         });
     }
 
-    function uninstallInstallMediaPlugin(mediaPlugin, installedCopy) {
+    function uninstallInstallMediaPlugin(dialog, mediaPlugin, installedCopy) {
         if (installedCopy) {
             Database.removeMediaSource(user, installedCopy);
-            window.location.reload();
-            // uninstall file from server
+            if (!Database.getMediaSourcByScrapperClassName(installedCopy.scrapper_class_name).length) {
+                dialog.update({
+                    style: { minWidth: "max-content" },
+                    message: null,
+                    confirmLabel: null,
+                    icon: "fas fa-spinner fa-pulse",
+                });
+                requestService.unInstallMediaSource(pluginHostInputRef.current.value(), installedCopy).then(() => {
+                    window.location.reload();
+                }).catch(err => dialog.update({ icon: null, message: err.message, confirmLabel: "Cancel" }));
+            } else {
+                window.location.reload();
+            }
             return;
         }
-        Database.addMediaSource(user, mediaPlugin);
-        window.location.reload();
+        if (!Database.getMediaSourcByScrapperClassName(mediaPlugin.scrapper_class_name).length) {
+            dialog.update({
+                style: { minWidth: "max-content" },
+                message: null,
+                confirmLabel: null,
+                icon: "fas fa-spinner fa-pulse",
+            });
+            requestService.installMediaSource(pluginHostInputRef.current.value(), mediaPlugin).then(() => {
+                Database.addMediaSource(user, mediaPlugin);
+                window.location.reload();
+            }).catch(err => dialog.update({ icon: null, message: err.message, confirmLabel: "Cancel" }));
+        } else {
+            Database.addMediaSource(user, mediaPlugin);
+            window.location.reload();
+        }
     }
 
     function importDialogEvent() {

@@ -21,7 +21,7 @@ function Landing() {
     if (!user) navigate("/");
 
     return (<div className="landing">
-        <TabPane scheme={user?.color_scheme} activeTabIndex={2} alignNavigator={Alignment.BOTTOM}>
+        <TabPane scheme={user?.color_scheme} activeTabIndex={0} alignNavigator={Alignment.BOTTOM}>
             <TabPanel title={landingIcon("fa fa-home", "Home")} contentClassName="landing-tab-content">
                 <Home user={user} genre={genre} cast={cast}/>
             </TabPanel>

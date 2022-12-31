@@ -33,6 +33,9 @@ async function fetchSiteData(req, res, isRetry) {
             if (!context) context = await browser.newContext();
             if (!page) page = await context.newPage();
             await page.goto(actualUrl);
+            if (req.query.element_to_wait_for) {
+                await page.click(req.query.element_to_wait_for, {timeout: 9000});
+            }
             page.content().then(async function (html) {
                 if (req.query.clazz === "managed") return res.json(JSON.parse(response.data));
                 useCleanser(req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html, actualUrl, (result) => {

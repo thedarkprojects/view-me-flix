@@ -19,6 +19,7 @@ module.exports = class Soap2DayUs {
             result.push({
                 source: "soap2day.rs",
                 title: fileNameEL.text.trim(),
+                scrapper_class_name: "Soap2DayUs",
                 media_link: Soap2DayUs.buildFullUrl(medialLink),
                 type: medialLink.includes("/tv") ? "show" : "movie",
                 preview_image: movie.querySelector('img').getAttribute("data-src")
@@ -35,6 +36,7 @@ module.exports = class Soap2DayUs {
         const similarMovies = [];
         const root = parse(html);
         result.source = "soap2day.rs";
+        result.scrapper_class_name = "Soap2DayUs";
         result.synopsis = root.querySelector(".section-description").querySelector("p").text.trim();
 
         const dpes = root.querySelectorAll('.dp-element');
@@ -121,24 +123,6 @@ module.exports = class Soap2DayUs {
                     });
                 })
             });
-            /*
-            for (const ep of eps) {
-                const epServers = [];
-                const epId = ep.getAttribute("data-id");
-                const serverRoot = parse((await ffs.get(`https://soap2day.rs/ajax/v2/episode/servers/${epId}`)).body);
-                const serverEls = serverRoot.querySelectorAll(".nav-link");
-                for (const serverEl of serverEls) {
-                    const linkId = serverEl.getAttribute("data-id");
-                    epServers.push({
-                        name: serverEl.text.trim(),
-                        link: url.replace(/\/tv\//, '/watch-tv/') + "." + linkId
-                    });
-                }
-                episodes.push({
-                    title: ep.text.trim(),
-                    servers: epServers
-                });
-            }*/
         }).catch(err => {
             console.error("FETCH SOAP2DAY.RS EPISODES", err);
             responseCounter -= seasons.length; resportResponse();

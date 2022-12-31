@@ -88,6 +88,7 @@ function HomePreviews(props) {
                                 onClick={() => (movie.is_genre ? setCurrentGenre(movie.genre) : goToMovie(movie))}
                                 className={`${user.color_scheme} ${movie.is_genre ? "genre-button" : ""}`}
                                 style={{ backgroundImage: (movie.is_genre ? "inherit" : `url('${movie.preview_image.replace("178x268", "500x700")}')`) }}>
+                                {!movie.is_genre ? <div className="movie-title">{movie.title}</div> : null}
                                 {movie.is_genre ? <i className="fa fa-arrow-right"></i> : null}
                                 {movie.is_genre ? <span>View More</span> : null}
                             </div>);

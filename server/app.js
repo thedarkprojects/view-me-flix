@@ -25,7 +25,7 @@ app.get('/ext/raw', (req, res) => {
         res.send(response.data)
     }).catch(function (err) {
         console.error(err);
-        res.send(err.message);
+        res.status(500); res.send(err.message);
     });
 });
 
@@ -43,25 +43,34 @@ app.get('/favicon.ico', (req, res) => res.send(`success`));
 app.get('/mediaplugin/plugin/install', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
     ffs.get(req.query.scrapper_class_location, { responseType: "text" }).then(function (response) {
-        var stream = fs.createWriteStream(`server/cleansers/mediaplugins/${req.query.name}.js`);
-        stream.once('open', function () {
-            stream.write(response.data);
-            stream.end();
+        let stream1 = fs.createWriteStream(`server/cleansers/mediaplugins/${req.query.name}.js`);
+        stream1.once('open', function () {
+            stream1.write(response.data);
+            stream1.end();
         });
         ffs.get(req.query.player_injection_script_location, { responseType: "text" }).then(function (response) {
-            var stream = fs.createWriteStream(`server/cleansers/mediaplugins/${req.query.name}.player.js`);
-            stream.once('open', function () {
-                stream.write(response.data);
-                stream.end();
+            let stream2 = fs.createWriteStream(`server/cleansers/mediaplugins/${req.query.name}.player.js`);
+            stream2.once('open', function () {
+                stream2.write(response.data);
+                stream2.end();
             });
-            res.send("{ success: true }")
+            const playerInjectionScriptsMap = JSON.parse(fs.readFileSync('server/cleansers/mediaplugins/PlayerInjectionScriptsMap.json', 'utf8'));
+            playerInjectionScriptsMap[req.query.name] = `${req.query.name}.player.js`;
+            playerInjectionScriptsMap[req.query.base_url] = `${req.query.name}.player.js`;
+            let stream3 = fs.createWriteStream('server/cleansers/mediaplugins/PlayerInjectionScriptsMap.json');
+            stream3.once('open', function () {
+                stream3.write(JSON.stringify(playerInjectionScriptsMap));
+                stream3.end();
+            });
+            res.send(`{ "success": true }`);
+            __CachedPlayerInjectionScripts = {};
         }).catch(function (err) {
             console.error(err);
-            res.send(err.message);
+            res.status(500); res.send(err.message);
         });
     }).catch(function (err) {
         console.error(err);
-        res.send(err.message);
+        res.status(500); res.send(err.message);
     });
 });
 
@@ -69,8 +78,37 @@ app.get('/mediaplugin/plugin/uninstall', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
     fs.unlink(`server/cleansers/mediaplugins/${req.query.name}.js`, (a, b) => console.log(a, b));
     fs.unlink(`server/cleansers/mediaplugins/${req.query.name}.player.js`, (a, b) => console.log(a, b));
-    res.send("{ success: true }");
+    res.send(`{ "success": true }`);
+    let playerInjectionScriptsMap = {};
+    try {
+        playerInjectionScriptsMap = JSON.parse(fs.readFileSync('server/cleansers/mediaplugins/PlayerInjectionScriptsMap.json', 'utf8'));
+        delete playerInjectionScriptsMap[req.query.name];
+        delete playerInjectionScriptsMap[req.query.base_url];
+        let stream = fs.createWriteStream('server/cleansers/mediaplugins/PlayerInjectionScriptsMap.json');
+        stream.once('open', function () {
+            stream.write(JSON.stringify(playerInjectionScriptsMap));
+            stream.end();
+        });
+        __CachedPlayerInjectionScripts = {};
+    } catch (err) {
+        console.error("Unable to delete the injection script entry", err);
+    }
 });
+
+let __CachedPlayerInjectionScripts = {};
+function getPlayerInjectionScript(baseUrlOrName) {
+    if (__CachedPlayerInjectionScripts[baseUrlOrName]) {
+        return fs.readFileSync(`server/cleansers/mediaplugins/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
+    }
+    try {
+        const playerInjectionScriptsMap = JSON.parse(fs.readFileSync('server/cleansers/mediaplugins/PlayerInjectionScriptsMap.json', 'utf8'));
+        __CachedPlayerInjectionScripts[baseUrlOrName] = playerInjectionScriptsMap[baseUrlOrName];
+        return fs.readFileSync(`server/cleansers/mediaplugins/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
+    } catch (err) {
+        console.error(err);
+        return "alert('Cannot Load PlayerInjectionScriptsMap.json');"
+    }
+}
 
 function startExpressServer(options, cb) {
     options = options || {};
@@ -79,6 +117,7 @@ function startExpressServer(options, cb) {
     const listener = app.listen(options.port, () => {
         options.listerner = listener;
         options.listenAddress = listener.address();
+        options.getPlayerInjectionScript = getPlayerInjectionScript;
         options.url = `http://${options.listenAddress.address.replace("::", "127.0.0.1")}:${options.listenAddress.port}`;
         cb(options);
     }).on('error', function(err) {

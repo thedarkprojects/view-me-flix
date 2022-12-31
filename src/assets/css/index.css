@@ -364,6 +364,7 @@ code {
     margin-top: 5px;
     margin-left: 5px;
     margin-right: 5px;
+    position: relative;
     margin-bottom: 10px;
     display: inline-block;
     background-size: 100% 100%;
@@ -373,6 +374,36 @@ code {
 .movie-list>div:hover {
     transform: scale(1.05, 1.05);
     transition: all 0.3s ease-in-out;
+}
+
+.movie-list>div> .movie-title {
+    width: 100%;
+    display: none;
+    text-align: center;
+    bottom: 0;
+    position: absolute;
+    min-height: 50px;
+    overflow: hidden;
+    background: rgb(0, 0, 0, 0.9);
+    font-weight: bold;
+    padding: 10px 0px 10px 0px;
+    align-items: center;
+    justify-content: center;
+}
+
+.movie-list>div:hover > .movie-title {
+    display: flex;
+}
+
+.movie-list>div> .fa-times-circle {
+    color: grey;
+    font-size: 30px;
+    float: right;
+    margin-right: 10px;
+}
+
+.movie-list>div> .fa-times-circle:hover {
+    color: red;
 }
 
 .movie-list.vertical {
@@ -603,6 +634,15 @@ code {
     align-items: center;
     justify-content: space-between;
     display: flex;
+}
+
+.ms-list > .item > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
 
 .ms-list > .item > button {
