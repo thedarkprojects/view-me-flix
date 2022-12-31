@@ -75,7 +75,7 @@ export class BaseService {
             });
     }
 
-    aggregateListFromSites(urls, config, shuffle) {
+    aggregateListFromSites(urls, config = {}, shuffle = false) {
         return this.report(Promise.all((urls || []).map(url => this.report(this.transport.get(`${this.baseUrl}/ext/json?method=GET&url=${url}`, { refreshCache: false, ...config })))), (responses) => {
             if (!responses || !responses.length) return;
             responses.data = this.shuffleArray(this.resultCombiner(responses), shuffle);

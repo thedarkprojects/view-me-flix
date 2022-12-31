@@ -38,15 +38,37 @@ export class RequestService extends BaseService {
         return this.report(this.aggregateListFromSites(Database.getMediaUrls(this.user).tv_shows, { params: { page }}, true));
     }
 
-    getMovieDetail(url, source) {
-        return this.report(this.transport.get(`${this.baseUrl}/ext/json?url=${url}&method=GET&requires_js=true&func=cleanMoviePage`, 
+    getMovieDetail(url, scrapperClass) {
+        const elementToWaitFor = encodeURIComponent(Database.getMediaSourcByScrapperClassName(scrapperClass)[0].element_to_wait_for);
+        console.log(">>>>>>>>>>|||||||||||", elementToWaitFor);
+        return this.report(this.transport.get(`${this.baseUrl}/ext/json?url=${url}&method=GET&requires_js=true&func=cleanMoviePage&clazz=${scrapperClass}&element_to_wait_for=${elementToWaitFor}`, 
             { refreshCache: false }), (response) => {
                 response.data.similarMovies = this.shuffleArray(response.data.similarMovies || []);
         });
     }
 
-    getMediaPlugins() {
-        return this.report(this.transport.get("http://127.0.0.1:9002/mediaplugins/registry.json"));
+    getMediaPlugins(plugin_host) {
+        return this.report(this.transport.get(`${plugin_host}`));
+    }
+
+    buildMediaPluginConfig(baseUrl, mediaPlugin) {
+        return { responseType: "text", params: {
+            base_url: mediaPlugin.base_url,
+            name: mediaPlugin.scrapper_class_name,
+            scrapper_class_location: baseUrl + mediaPlugin.scrapper_class_location,
+            player_injection_script_location: baseUrl + mediaPlugin.player_injection_script_location
+        }};
+    }
+
+    installMediaSource(baseUrl, mediaPlugin) {
+        baseUrl = baseUrl.substr(0, baseUrl.indexOf("/", 10));
+        return this.report(this.transport.get(`${this.baseUrl}/mediaplugin/plugin/install`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
+    }
+
+    unInstallMediaSource(baseUrl, mediaPlugin) {
+        baseUrl = baseUrl.substr(0, baseUrl.indexOf("/", 10));
+        console.log("REMOVING SCRAPPER", mediaPlugin)
+        return this.report(this.transport.get(`${this.baseUrl}/mediaplugin/plugin/uninstall`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
     }
 
 }

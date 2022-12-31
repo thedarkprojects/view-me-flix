@@ -42,7 +42,7 @@ const createWindow = (url) => {
             return;
         };
         activeView = win.getBrowserView();
-        win.setBrowserView(loadingView);
+        //win.setBrowserView(loadingView);
         loadingView.setBounds({ x: 0, y: 0, width: win.getBounds().width, height: win.getBounds().height })
     });
     win.webContents.on('did-stop-loading', (_) => {
@@ -50,17 +50,17 @@ const createWindow = (url) => {
         if (currentURL === lastLoadedUrl) return;
         lastLoadedUrl = currentURL;
         if (currentURL.includes("file://")) {
-            if (win.getBrowserView() === loadingView) win.setBrowserView(activeView);
+            //if (win.getBrowserView() === loadingView) win.setBrowserView(activeView);
             return;
         };
         function removeWebsiteElements(count) {
             console.log("REMOVING PLAYER WEBISITE ELEMENTS", count);
-            win.webContents.executeJavaScript(soap2dayPlayerTrimmer + backButtonOnPlayerHtml(urlBeforePlayer)).then((result) => {
+            win.webContents.executeJavaScript(getMediaSourcePlayerScript(currentURL) + backButtonOnPlayerHtml(urlBeforePlayer)).then((result) => {
                 console.log("RESULT FROM PLAYER TRIMMER", result);
-                win.setBrowserView(activeView);
+                //win.setBrowserView(activeView);
             }).catch(err => {
                 if (count <= 1) {
-                    win.setBrowserView(activeView);
+                    //win.setBrowserView(activeView);
                     removeWebsiteElements(count + 1);
                     return;
                 }
@@ -78,8 +78,17 @@ const createWindow = (url) => {
     });
 }
 
+let serverOptions = {};
+const getMediaSourcePlayerScript = (url) => {
+    const baseUrl = url.substr(0, url.indexOf("/", 10));
+    const ijscript = serverOptions.getPlayerInjectionScript(baseUrl);
+    //console.log("TO LOAD SCRIPT", ijscript);
+    return ijscript;
+}
+
 app.whenReady().then(() => {
     server = startExpressServer({ useAnotherPort: true, port: 7001 }, (options) => {
+        serverOptions = { ...options };
         console.log(`view more middleware running on port ${options.port}`);
         createWindow(options.url);
     });
@@ -93,29 +102,12 @@ app.on('window-all-closed', function () {
         app.quit()
     }
     app.quit();
-})
-
-const soap2dayPlayerTrimmer = `
-let getSiblings = n => [...n.parentElement.children].filter(c=>c!=n)
-function removeElementExcept(survivor) {
-    if (!survivor) return;
-    const parent = survivor.parentElement;
-    if (survivor === document || !parent) return;
-    const siblings = getSiblings(survivor);
-    for (const sibling of siblings) {
-    if (sibling.tagName === 'HEAD') continue;
-    sibling.remove();
-    }
-    removeElementExcept(parent);
-}
-const playerElement = document.getElementsByClassName('watching_player-area')[0];
-removeElementExcept(playerElement);
-document.body.style.background = "black";
-//document.getElementById("overlay-center").remove();
-`;
+});
 
 const backButtonOnPlayerHtml = (url) => {
-    let html = `document.getElementsByTagName('body')[0].innerHTML += (\`<div style='position: fixed; bottom: 20px; left: 20px; z-index: 999; display: flex; flex-wrap: wrap;'>
+    let html = `
+    document.body.style.background = "black";
+    document.getElementsByTagName('body')[0].innerHTML += (\`<div style='position: fixed; bottom: 20px; left: 20px; z-index: 999; display: flex; flex-wrap: wrap;'>
         <button onclick='window.history.go(-3); return false;'
             style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Back</button>
         <button onclick='window.location.reload(); return false;'

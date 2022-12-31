@@ -102,7 +102,9 @@ function WatchMedia() {
                     style={{ height: "unset", margin: 0, padding: 15 }}>
                     {(mainMedia?.similarMovies || []).map((movie, index) => {
                         return (<div key={index} onClick={() => goToMovie(movie)} className={`movie-item ${user.color_scheme}`}
-                            style={{ backgroundImage: `url('${movie.preview_image.replace("178x268", "500x700")}')` }}></div>);
+                            style={{ backgroundImage: `url('${movie.preview_image.replace("178x268", "500x700")}')` }}>
+                                <div className="movie-title">{movie.title}</div>
+                            </div>);
                     })}
                 </div>
             </div>
@@ -110,7 +112,7 @@ function WatchMedia() {
     </div>);
 
     function fetchMediaDetails(media) {
-        requestService.getMovieDetail(media.media_link, media.source).then(res => {
+        requestService.getMovieDetail(media.media_link, media.scrapper_class_name).then(res => {
             cMedia = { ...media, ...res.data };
             setMainMedia(cMedia);
             if (cMedia.type === "show") {
@@ -168,6 +170,10 @@ function WatchMedia() {
         }
         //mainMedia.servers = ((mainMedia.servers.length > 0) ? mainMedia.servers : mainMedia.seasons[0].episodes[0].servers)
         if (!mainMedia || !mainMedia.servers) return;
+        if (/*mainMedia.type !== "show" && */mainMedia.servers.length === 1) {
+            navigateToMediaPlayer(mainMedia, mainMedia.servers[0].link);
+            return;
+        }
         alertDialog({
             style: { minWidth: "50%" },
             message: (<div style={{ display: "flex", flexDirection: "column", width: "100%" }}>

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { AssetLoader, Database, viewMeConsole } from "../utils";
 import { alertDialog } from "@ronuse/norseu/core/overlay";
-import { Dropdown, InputText } from "@ronuse/norseu/core/form";
+import { Dropdown, InputText, PasswordInput } from "@ronuse/norseu/core/form";
 import { Alignment, Scheme } from "@ronuse/norseu/core/variables";
 
 function SelectUser() {
@@ -11,6 +11,7 @@ function SelectUser() {
     const navigate = useNavigate();
     const addErrorRef = React.useRef();
     const usernameRef = React.useRef();
+    const passwordRef = React.useRef();
     const profileUrlRef = React.useRef();
     const colorSchemeRef = React.useRef();
     const [editMode, setEditMode] = React.useState(false);
@@ -56,11 +57,39 @@ function SelectUser() {
         </div>);
     }
 
+    function askForPassword(user, cb) {
+        alertDialog({
+            message: <div style={{ marginBottom: 10 }}>
+                <PasswordInput inputStyle={{ marginTop: 15, marginBottom: 10 }} ref={passwordRef} 
+                    label={window.viewmore.i18nData.password} scheme={Scheme.LIGHT} 
+                    onInput={() => addErrorRef.current.innerText ? addErrorRef.current.innerText = null : null} fill toggleMask />
+                <span ref={addErrorRef} style={{ color: "red" }}></span>
+            </div>,
+            cancelLabel: "Cancel",
+            confirmLabel: "Continue",
+            confirmScheme: Scheme.SUCCESS,
+            onConfirm: () => {
+                if (passwordRef.current.value() === user.password) {
+                    cb(user, passwordRef.current.value());
+                    return;
+                }
+                addErrorRef.current.innerText = "Password does not match";
+                return true;
+            }
+        });
+    }
+
     function navigateToUserViewBoard(user) {
         if (editMode) return;
         if (user.id != 0) {
-            navigate("/dashboard", { state: { user } });
-            return
+            if (!user.password) {
+                navigate("/dashboard", { state: { user } });
+                return
+            }
+            askForPassword(user, () => {
+                navigate("/dashboard", { state: { user } });
+            })
+            return;
         }
         alertDialog({
             style: { minWidth: "30%" },
@@ -69,6 +98,7 @@ function SelectUser() {
                 <InputText label={window.viewmore.i18nData.username} ref={usernameRef} placeholder="" scheme={Scheme.LIGHT} fill />
                 <Dropdown ref={colorSchemeRef} label={window.viewmore.i18nData.color_scheme} scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill selectedOptionIndex={3} />
                 <InputText label={window.viewmore.i18nData.profile_picture_url} ref={profileUrlRef} placeholder="" scheme={Scheme.LIGHT} fill />
+                <PasswordInput ref={passwordRef} label={window.viewmore.i18nData.password} scheme={Scheme.LIGHT} defaultValue={user.password} fill />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>),
             confirmLabel: window.viewmore.i18nData.add_user,
@@ -84,6 +114,7 @@ function SelectUser() {
                 }
                 const user = {
                     username: usernameRef.current.value(),
+                    password: passwordRef.current.value(),
                     color_scheme: colorSchemeRef.current.value(),
                     profile_piture: profileUrlRef.current.value(),
                 };
@@ -93,7 +124,13 @@ function SelectUser() {
         });
     }
 
-    function editProfile(user) {
+    function editProfile(user, checkPassword = true) {
+        if (checkPassword && user.password) {
+            askForPassword(user, (user) => {
+                editProfile(user, false);
+            })
+            return;
+        }
         setEditMode(false);
         alertDialog({
             style: { minWidth: "30%" },
@@ -103,6 +140,7 @@ function SelectUser() {
                 <Dropdown ref={colorSchemeRef} label={window.viewmore.i18nData.color_scheme} scheme={Scheme.LIGHT} options={colorDropdownOptions} matchTargetSize fill
                     selectedOptionIndex={colorDropdownOptions.findIndex(x => x.value === user.color_scheme)} />
                 <InputText ref={profileUrlRef} label={window.viewmore.i18nData.profile_picture_url} defaultValue={user.profile_piture} scheme={Scheme.LIGHT} fill />
+                <PasswordInput ref={passwordRef} label={window.viewmore.i18nData.password} scheme={Scheme.LIGHT} defaultValue={user.password} fill />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>),
             alignFooter: Alignment.CENTER,
@@ -127,6 +165,7 @@ function SelectUser() {
             },
             onCancel: () => {
                 user.username = usernameRef.current.value();
+                user.password = passwordRef.current.value();
                 user.color_scheme = colorSchemeRef.current.value();
                 user.profile_piture = profileUrlRef.current.value();
                 setUsers(Database.updateUser(user, AssetLoader.getAsset("plus_add")));

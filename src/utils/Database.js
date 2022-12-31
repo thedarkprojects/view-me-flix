@@ -49,26 +49,11 @@ const Database = {
                 search: "https://soap2day.rs/search/{0}",
                 coming_soon: "https://soap2day.rs/coming-soon",
             }
-        },
-        {
-            active: false,
-            name: "w5.123animes.mobi",
-            author: "Theotherguy",
-            base_url: "https://w5.123animes.mobi",
-            scrapper_class_name: "W5123Animes",
-            scrapper_class_location: "https://github-link.js.file",
-            player_injection_script_location: "https://github-link.js.file",
-            urls: {
-                popular: "https://w5.123animes.mobi/home",
-                genre: "https://w5.123animes.mobi/genere/{0}",
-                movies: "https://w5.123animes.mobi/type/movies",
-                cast: "https://w5.123animes.mobi/search?keyword={0}",
-                tv_shows: "https://w5.123animes.mobi/type/tv series",
-                search: "https://w5.123animes.mobi/search?keyword={0}",
-                coming_soon: "https://w5.123animes.mobi/status/upcoming",
-            }
         }
     ],
+
+    __Tables: ["view.me.users", "view.me.favourites", "view.me.actively-watching", "view.me.settings.media.sources", 
+            "view.me.settings.plugin.host"],
 
     /** The Database Encryption Interface */
 
@@ -197,7 +182,8 @@ const Database = {
 
     addToRecord(tableName, newRecord) {
         const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
-        newRecord.id = records.length+1;
+        if (newRecord.id) return Database.updateInRecord(tableName, newRecord);
+        newRecord.id = (records.length ? records[records.length-1].id + 1: records.length+1);
         records.push(newRecord);
         Database.cacheObject(tableName, records);
         return records;
@@ -263,6 +249,10 @@ const Database = {
 
     deleteUser(user, plus_add) {
         Database.deleteFromRecord("view.me.users", user);
+        for (const table of Database.__Tables) {
+            const records = Database.getRecords(table, [{ field: "user_id", value: user.id }]);
+            records.forEach(record => Database.deleteFromRecord(table, record));
+        }
         return Database.getUsers(plus_add);
     },
 
@@ -310,6 +300,11 @@ const Database = {
 
     ___CachedUrls: {},
 
+    getMediaSourcByScrapperClassName(className) {
+        let records = Database.getRecords("view.me.settings.media.sources", [{ field: "scrapper_class_name", value: className }]);
+        return records || Database._mediaSources;
+    },
+
     getMediaSources(user, queries = [], failFast) {
         let records = Database.getRecords("view.me.settings.media.sources", [{ field: "user_id", value: user.id }, ...queries], "AND");
         if (!records || !records.length) {
@@ -334,6 +329,8 @@ const Database = {
 
     toggleMediaSource(user, mediaSource, active) {
         mediaSource.active = active;
+        mediaSource.user_id = user.id;
+        console.log("TO STORE", mediaSource);
         Database.updateInRecord("view.me.settings.media.sources", mediaSource);
         delete Database.___CachedUrls[user.id];
         window.location.reload();
@@ -358,11 +355,31 @@ const Database = {
         return Database.___CachedUrls[user.id];
     },
 
+    /** Settings - Plugin Host */
+
+    //http://127.0.0.1:9002/mediaplugins/registry.json
+    getPluginHost(user) {
+        const records = Database.getRecords("view.me.settings.plugin.host", [{ field: "user_id", value: user.id }]);
+        if (!records || !records.length) return "https://raw.githubusercontent.com/thedarkprojects/view-me-registry/main/mediaplugins/registry.json";
+        return records[0].url;
+    },
+
+    updatePluginHost(user, url) {
+        const pluginHost = { url, user_id: user.id };
+        let records = Database.getRecords("view.me.settings.plugin.host", [{ field: "user_id", value: user.id }]);
+        if (records && records.length) {
+            pluginHost.id = records[0].id;
+            return Database.updateInRecord("view.me.settings.plugin.host", pluginHost);
+        }
+        return Database.addToRecord("view.me.settings.plugin.host", pluginHost);
+    },
+
     /* Settings - Langauge */
 
     __DefaultLanguage: {
         done: "Done",
         cancel: "Cancel",
+        password: "Password",
         username: "Username",
         add_user: "Add User",
         color_scheme: "Color Scheme",

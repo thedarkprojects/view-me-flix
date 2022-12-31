@@ -29,7 +29,9 @@ function Search(props) {
         <ScrollPanel scheme={user.color_scheme} className="movie-list vertical" ref={moviesScrollPanel}>
             {searchResult.map(movie => {
                 return (<div onClick={() => goToMovie(movie)} className={`movie-item ${user.color_scheme}`}
-                    style={{ backgroundImage: `url('${movie.preview_image.replace("178x268", "500x700")}')` }}></div>);
+                    style={{ backgroundImage: `url('${movie.preview_image.replace("178x268", "500x700")}')` }}>
+                        <div className="movie-title">{movie.title}</div>
+                    </div>);
             })}
             <ViewportSensor onEnterViewport={onScrollToBottom} scrollContainerRef={moviesScrollPanel} />
         </ScrollPanel>
