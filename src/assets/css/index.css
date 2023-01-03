@@ -11,6 +11,10 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
+a {
+    color: #3366b8;
+}
+
 #root {
     width: 100vw;
     height: 100vh;
@@ -611,6 +615,7 @@ code {
 
 .settings > .group {
     display: flex;
+    word-wrap: break-word;
     flex-direction: column;
 }
 
@@ -650,6 +655,15 @@ code {
 }
 
 /* generall Styles */
+
+.norseu-dialog-header {
+    border: 1px solid white;
+    background-color: black;
+}
+
+.log-dialog-content {
+    padding: 0px;
+}
 
 .norseu-panel-content {
     height: 100%;

@@ -1,3 +1,4 @@
+import React from "react";
 import "../assets/css/App.css";
 import Splash from "./Splash";
 import Landing from "./Landing";
@@ -6,6 +7,7 @@ import { Database, ScrollToTop } from "../utils";
 import { createBrowserHistory } from "history";
 import { BrowserRouter, Routes, Route, HashRouter } from "react-router-dom";
 import WatchMedia from "./WatchMedia";
+import { BaseService } from "../services";
 
 // First, checks if it isn't implemented yet.
 if (!String.prototype.format) {
@@ -24,6 +26,19 @@ window.viewmore = window.viewmore || {};
 window.viewmore.i18nData = Database.getLanguage();
 
 function App() {
+  const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
+  React.useEffect(() => {
+      BaseService.StartupBaseUrl = searchParams.get("middlewareurl");
+      if (!BaseService.StartupBaseUrl) {
+        if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+          BaseService.StartupBaseUrl = "http://127.0.0.1:3001";
+        } else {
+          BaseService.StartupBaseUrl = `http://${window.location.host}`;
+        }
+      }
+      Database.setMiddlewareUrl(BaseService.StartupBaseUrl);
+  });
+
     return (
         <HashRouter history={history}>
             <ScrollToTop/>

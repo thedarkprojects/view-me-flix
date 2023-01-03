@@ -15,11 +15,14 @@ const ffs = require("kyofuuc").init({
 export class BaseService {
     
     user = {};
-    baseUrl = Database.getMiddlewareUrl();
+    static BaseUrl;
+    static StartupBaseUrl = new URLSearchParams(decodeURIComponent(window.location.search)).get("middlewareurl") || "http://127.0.0.1:3001";
 
     // should not re init, 
     constructor(user) {
         this.user = user;
+        BaseService.BaseUrl = Database.getMiddlewareUrl();
+        //if (!BaseService.StartupBaseUrl) BaseService.StartupBaseUrl = BaseService.BaseUrl;
         if (this.transport) return;
         this.transport = ffs; // to use axios simply change to => this.transport = axios;
         ffs.httpInterceptor.registerPreRequest((_, config) => {
@@ -63,7 +66,7 @@ export class BaseService {
         return this.report(Promise.all(Object.keys(urlMap).map(urlKey => {
             const urls = urlMap[urlKey];
             if (Array.isArray(urls)) return this.aggregateListFromSites(urls, { mapKey: urlKey, ...config });
-            return this.report(this.transport.get(`${this.baseUrl}/ext/json?url=${urls}&method=GET`, { mapKey: urlKey, refreshCache: true }))
+            return this.report(this.transport.get(`${BaseService.BaseUrl}/ext/json?url=${urls}&method=GET`, { mapKey: urlKey, refreshCache: true }))
             })), (responses) => {
                 if (!responses || !responses.length) return;
                 for (const response of responses) {
@@ -76,7 +79,7 @@ export class BaseService {
     }
 
     aggregateListFromSites(urls, config = {}, shuffle = false) {
-        return this.report(Promise.all((urls || []).map(url => this.report(this.transport.get(`${this.baseUrl}/ext/json?method=GET&url=${url}`, { refreshCache: false, ...config })))), (responses) => {
+        return this.report(Promise.all((urls || []).map(url => this.report(this.transport.get(`${BaseService.BaseUrl}/ext/json?method=GET&url=${url}`, { refreshCache: false, ...config })))), (responses) => {
             if (!responses || !responses.length) return;
             responses.data = this.shuffleArray(this.resultCombiner(responses), shuffle);
             responses.config = responses[0].config;

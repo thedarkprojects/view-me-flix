@@ -11,6 +11,7 @@ export class RequestService extends BaseService {
     }
 
     getPopularComingSoonOrGenreLink(genre) {
+        genre = genre.label + genre.aliases.join("&");
         const urls = Database.getMediaUrls(this.user);
         genre = genre.replace(/& /g,'').replace(/\s/g, '-');
         return genre == "Popular"
@@ -39,12 +40,20 @@ export class RequestService extends BaseService {
     }
 
     getMovieDetail(url, scrapperClass) {
-        const elementToWaitFor = encodeURIComponent(Database.getMediaSourcByScrapperClassName(scrapperClass)[0].element_to_wait_for);
-        console.log(">>>>>>>>>>|||||||||||", elementToWaitFor);
-        return this.report(this.transport.get(`${this.baseUrl}/ext/json?url=${url}&method=GET&requires_js=true&func=cleanMoviePage&clazz=${scrapperClass}&element_to_wait_for=${elementToWaitFor}`, 
+        const elementToWaitFor = encodeURIComponent(Database.getMediaSourcByScrapperClassName(scrapperClass)[0].element_to_wait_for || "");
+        //console.log(">>>>>>>>>>|||||||||||", elementToWaitFor);
+        return this.report(this.transport.get(`${BaseService.BaseUrl}/ext/json?url=${url}&method=GET&requires_js=true&func=cleanMoviePage&clazz=${scrapperClass}&element_to_wait_for=${elementToWaitFor}`, 
             { refreshCache: false }), (response) => {
                 response.data.similarMovies = this.shuffleArray(response.data.similarMovies || []);
         });
+    }
+
+    getMiddlewareLog() {
+        return this.report(this.transport.get(`${BaseService.BaseUrl}/log/text`, { responseType: "text" }));
+    }
+
+    clearMiddlewareLog() {
+        return this.report(this.transport.get(`${BaseService.BaseUrl}/log/clear`));
     }
 
     getMediaPlugins(plugin_host) {
@@ -61,14 +70,17 @@ export class RequestService extends BaseService {
     }
 
     installMediaSource(baseUrl, mediaPlugin) {
-        baseUrl = baseUrl.substr(0, baseUrl.indexOf("/", 10));
-        return this.report(this.transport.get(`${this.baseUrl}/mediaplugin/plugin/install`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
+        baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/"));
+        return this.report(this.transport.get(`${BaseService.BaseUrl}/mediaplugin/plugin/install`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
     }
 
     unInstallMediaSource(baseUrl, mediaPlugin) {
-        baseUrl = baseUrl.substr(0, baseUrl.indexOf("/", 10));
-        console.log("REMOVING SCRAPPER", mediaPlugin)
-        return this.report(this.transport.get(`${this.baseUrl}/mediaplugin/plugin/uninstall`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
+        baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/"));
+        return this.report(this.transport.get(`${BaseService.BaseUrl}/mediaplugin/plugin/uninstall`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
+    }
+
+    getClientProxyAddress() {
+        return this.report(this.transport.get(`${BaseService.BaseUrl}/get_client_proxies`));
     }
 
 }

@@ -20,7 +20,7 @@ function WatchMedia() {
     const [mainMedia, setMainMedia] = React.useState(media);
     const [isFavourite, setIsFavourite] = React.useState(Database.isFavourite(mainMedia, user));
     const [isActivelyWatching, setIsActivelyWatching] = React.useState(Database.isActivelyWatching(user, mainMedia));
-    const [selectedSeasonEpisodes, setSelectedSeasonEpisodes] = React.useState(mainMedia.type === "show" ? ((mainMedia?.seasons) ? mainMedia?.seasons[0].episodes : []) : []);
+    const [selectedSeasonEpisodes, setSelectedSeasonEpisodes] = React.useState(mainMedia.type === "show" ? ((mainMedia?.seasons) ? mainMedia?.seasons[(cMedia || mainMedia).season_index || 0].episodes : []) : []);
 
     React.useEffect(() => {
         cMedia = mainMedia;
@@ -79,15 +79,17 @@ function WatchMedia() {
                 ? (<div className={`seasons-list ${user.color_scheme}-border-top-color`}>
                     <Dropdown className={`${user.color_scheme}-border-1px ${user.color_scheme}-text`} inputClassName={`${user.color_scheme}-border-1px ${user.color_scheme}-text`}
                         internalInputClassName={`${user.color_scheme}-text`} scheme={user.color_scheme}
-                        options={mainMedia?.seasons?.map((season) => {
-                            return { label: season.name, value: season.name, episodes: season.episodes };
+                        options={mainMedia?.seasons?.map((season, index) => {
+                            return { label: season.name, value: season.name, index, episodes: season.episodes };
                         })} onSelectOption={(e) => {
+                            cMedia.season_index = e.option.index;
                             cMedia.active_season_title = e.option.label;
                             setSelectedSeasonEpisodes(e.option.episodes);
-                        }} selectedOptionIndex={0} matchTargetSize />
+                        }} selectedOptionIndex={(cMedia || mainMedia).season_index || 0} matchTargetSize />
                     <div className="episode-list">
-                        {selectedSeasonEpisodes.map((episode) => {
-                            return (<Button key={episode.title} scheme={user.color_scheme} className="ep" onClick={() => playMedia(episode)} outlined fillOnHover>
+                        {selectedSeasonEpisodes.map((episode, index) => {
+                            return (<Button key={episode.title} scheme={user.color_scheme} className="ep" onClick={() => playMedia(episode, index)} 
+                                outlined={(cMedia || mainMedia).episode_index !== index} fillOnHover>
                                 <i className="fa fa-play"></i>
                                 <span>{episode.title}</span>
                             </Button>);
@@ -115,7 +117,7 @@ function WatchMedia() {
         requestService.getMovieDetail(media.media_link, media.scrapper_class_name).then(res => {
             cMedia = { ...media, ...res.data };
             setMainMedia(cMedia);
-            if (cMedia.type === "show") {
+            if (cMedia.type === "show" && cMedia.seasons.length) {
                 setSelectedSeasonEpisodes(cMedia.seasons[0].episodes);
             }
         }).catch(err => {
@@ -155,13 +157,14 @@ function WatchMedia() {
         });
     }
 
-    function playMedia(mainMedia) {
+    function playMedia(mainMedia, eindex) {
         mainMedia = mainMedia || cMedia;
         if (mainMedia.final_media_link) {
             navigateToMediaPlayer(mainMedia, mainMedia.final_media_link);
             return;
         }
         if (cMedia.type === "show") {
+            cMedia.episode_index = eindex;
             cMedia.actively_watching_episode = { ...mainMedia };
             mainMedia = {
                 ...cMedia,
@@ -182,9 +185,6 @@ function WatchMedia() {
                     {mainMedia.servers.map((server, index) => {
                         return (<Button key={index} text={server.name} style={{ marginTop: 10 }}
                             onClick={() => {
-                                if (mainMedia.actively_watching_episode && mainMedia.actively_watching_episode.title) {
-                                    mainMedia.season_episode_name = `${mainMedia.active_season_title || "Season 1"} - ${mainMedia.actively_watching_episode.title}`
-                                }
                                 navigateToMediaPlayer(mainMedia, server.link);
                             }} />);
                     })}
@@ -196,6 +196,9 @@ function WatchMedia() {
     }
 
     function navigateToMediaPlayer(media, final_media_link) {
+        if (media.actively_watching_episode && media.actively_watching_episode.title) {
+            media.season_episode_name = `${(media.seasons || [{ name: "Seaon 1"}])[0].name} - ${media.actively_watching_episode.title}`
+        }
         Database.addToActivelyWatching(user, { ...media, final_media_link });
         window.location = final_media_link;
     }

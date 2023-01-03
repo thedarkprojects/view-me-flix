@@ -4,27 +4,38 @@ const { chromium, devices } = require("playwright");
 
 const MediaPlugins = {};
 
-function loadAndMediaPlugin(name, port) {
+function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
     try {
         if (!MediaPlugins[name]) {
-            const mediaPlugin = require(`./mediaplugins/${name}`);
+            const mediaPlugin = require(`${mediaPluginFolder}/${name}`);
+            mediaPlugin.logger = logger;
             mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
             MediaPlugins[name] = mediaPlugin;
         }
         return MediaPlugins[name];
     } catch (err) {
-        console.error(err);
-        return Object.values(MediaPlugins)[0];
+        try {
+            if (!MediaPlugins[name]) {
+                const mediaPlugin = require(`./mediaplugins/${name}`);
+                mediaPlugin.logger = logger;
+                mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
+                MediaPlugins[name] = mediaPlugin;
+            }
+            return MediaPlugins[name];
+        } catch (err) {
+            req.logger.error(err);
+            return Object.values(MediaPlugins)[0];
+        }
     }
 }
 
-async function useCleanser(port, clazzName, func, html, url, cb) {
-    const clazz = loadAndMediaPlugin(clazzName, port);
+async function useCleanser(mediaPluginFolder, logger, port, clazzName, func, html, url, cb) {
+    const clazz = loadAndMediaPlugin(mediaPluginFolder, logger, clazzName, port);
     return await clazz[func](html, url, cb);
 }
 
 let browser, context, page;
-async function fetchSiteData(req, res, isRetry) {
+async function fetchSiteData(mediaPluginFolder, req, res, isRetry) {
     const actualUrl = req.query.url = (Array.isArray(req.query.url) ? req.query.url.reduce((_, r) => (r.startsWith('http') ? r : ""), "") : req.query.url);
     if (req.query.requires_js) {
         console.log("USING PLAYWRIGHT => ", actualUrl, req.query);
@@ -38,20 +49,20 @@ async function fetchSiteData(req, res, isRetry) {
             }
             page.content().then(async function (html) {
                 if (req.query.clazz === "managed") return res.json(JSON.parse(response.data));
-                useCleanser(req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html, actualUrl, (result) => {
+                useCleanser(mediaPluginFolder, req.logger, req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html, actualUrl, (result) => {
                     return res.json(result);
                 }).catch(function (err) {
-                    console.error("fetchSiteData.useCleanser", err);
+                    req.logger.error("fetchSiteData.useCleanser", err);
                     res.json([]);
                 });
             }).catch(function (err) {
-                console.error(err);
+                req.logger.error(err);
                 return res.send([]);
             });
         } catch (err) {
             if (!isRetry) {
                 context = browser = page = null;
-                fetchSiteData(req, res, true);
+                fetchSiteData(mediaPluginFolder, req, res, true);
                 return;
             }
             return res.send([]);
@@ -60,14 +71,14 @@ async function fetchSiteData(req, res, isRetry) {
         console.log("USING KYOFUUC => ", actualUrl, req.query);
         ffs[(req.query.method || "get").toLowerCase()](actualUrl, { responseType: "text", ...req.query }).then(async function (response) {
             if (req.query.clazz === "managed") return res.json(JSON.parse(response.data));
-            useCleanser(req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), response.data, actualUrl, (result) => {
+            useCleanser(mediaPluginFolder, req.logger, req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), response.data, actualUrl, (result) => {
                 return res.json(result);
             }).catch(function (err) {
-                console.error("fetchSiteData.useCleanser", err);
+                req.logger.error("fetchSiteData.useCleanser", err);
                 res.json([]);
             });
         }).catch(function (err) {
-            console.error(err);
+            req.logger.error(err);
             return res.send([]);
         });
     }
