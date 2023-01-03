@@ -12,8 +12,7 @@ let activeMedia;
 
 function Genre(props) {
 
-    const user = props.user;
-    const genre = props.genre;
+    const { user, genre } = props;
     const navigate = useNavigate();
     const moviesScrollPanel = React.useRef();
     const requestService = new RequestService(user);
@@ -21,6 +20,7 @@ function Genre(props) {
     const [searchResult, setSearchResult] = React.useState([]);
     const [previewIsFavourite, setPreviewIsFavourite] = React.useState(false);
     const [activelyWatchingPreview, setActivelyWatchingPreview] = React.useState(false);
+    const genreObject = Object.values(Database.getGenres(user, [{ field: "label", value: props.genre }]));
     const [previewMovie, setPreviewMovie] = React.useState({ preview_image: AssetLoader.getAsset("green2") });
 
     React.useEffect(() => {
@@ -88,7 +88,7 @@ function Genre(props) {
             resolveGenreListRsponse(Database.getActivelyWatchings(user));
             return;
         }
-        requestService.getGenreList(genre, page).then(res => {
+        requestService.getGenreList((genreObject.length ? genreObject[0] : {}), page).then(res => {
             setCurrentPage(page);
             if (!res.data.length) {
                 setSearchResult([...searchResult])

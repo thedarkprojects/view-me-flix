@@ -87,7 +87,7 @@ module.exports = class Soap2DayUs {
         let responseCounter = seasons.length;
         function resportResponse() {
             if (responseCounter <= 0) cb(result);
-            //console.log("COUNTER", responseCounter);
+            //Soap2DayUs.logger.log("COUNTER", responseCounter);
         }
         // WHY? for speed sake dont want to wait 5 minute and above to fetch series
         // with over 20 seasons, call the requests in threads then report on complete
@@ -119,12 +119,12 @@ module.exports = class Soap2DayUs {
                         resportResponse();
                     }).catch(eerr => {
                         responseCounter -= 1; resportResponse();
-                        console.error("FETCH SOAP2DAY.RS EPISODES.SERVER", eerr);
+                        Soap2DayUs.logger.error("FETCH SOAP2DAY.RS EPISODES.SERVER", eerr);
                     });
                 })
             });
         }).catch(err => {
-            console.error("FETCH SOAP2DAY.RS EPISODES", err);
+            Soap2DayUs.logger.error("FETCH SOAP2DAY.RS EPISODES", err);
             responseCounter -= seasons.length; resportResponse();
         });
 

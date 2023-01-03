@@ -15,11 +15,12 @@ function HomePreviews(props) {
     const [previewIsFavourite, setPreviewIsFavourite] = React.useState(false);
     const [activelyWatchingPreview, setActivelyWatchingPreview] = React.useState(false);
     const { user, setLandingBackgroundImageLink, requestService, setCurrentGenre } = props.relaysProps;
-    const [moviesByGenres, setMoviesByGenres] = React.useState(Database._genres.reduce((a, v) => ({ ...a, [v]: [] }), {}));
+    const genres = Database.getGenres(user, [{ field: "active", value: true }]);
+    const [moviesByGenres, setMoviesByGenres] = React.useState(Object.keys(genres).reduce((a, v) => ({ ...a, [v]: [] }), {}));
 
     React.useEffect(() => {
         requestService.mapppedRequest(Object.keys(moviesByGenres).reduce((acc, genre) => {
-            acc[genre] = requestService.getPopularComingSoonOrGenreLink(genre);
+            acc[genre] = requestService.getPopularComingSoonOrGenreLink(genres[genre]);
             return acc;
         }, {}), { slice: 100 }, true).then(res => {
             let genresWithMedias = res.data;

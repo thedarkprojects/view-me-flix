@@ -8,27 +8,48 @@ const Database = {
     _cacheImpl: null,
 
     _genres: [
-        "Popular",
-        "Action",
-        "Action & Adventure",
-        "Adventure",
-        "Animation",
-        "Biography",
-        "Comedy",
-        "Crime",
-        "Documentary",
-        "Drama",
-        "Family",
-        "Fantasy",
-        "History",
-        "Horror",
-        "Kids",
-        "Music",
-        "Mystery",
-        "News",
-        "Coming Soon",
+        { active: true, label: "Popular", aliases: [] },
+        { active: true, label: "Action", aliases: [] },
+        { active: false, label: "Action & Adventure", aliases: [] },
+        { active: true, label: "Adventure", aliases: [] },
+        { active: false, label: "Animation", aliases: [] },
+        { active: true, label: "Biography", aliases: [] },
+        { active: true, label: "Comedy", aliases: [] },
+        { active: true, label: "Crime", aliases: [] },
+        { active: true, label: "Documentary", aliases: [] },
+        { active: true, label: "Drama", aliases: [] },
+        { active: false, label: "Family", aliases: [] },
+        { active: true, label: "Fantasy", aliases: [] },
+        { active: true, label: "History", aliases: [] },
+        { active: true, label: "Horror", aliases: [] },
+        { active: true, label: "Kids", aliases: [] },
+        { active: false, label: "Music", aliases: [] },
+        { active: true, label: "Mystery", aliases: [] },
+        { active: false, label: "News", aliases: [] },
+        { active: true, label: "Reality", aliases: [] },
+        { active: true, label: "Romance", aliases: [] },
+        { active: true, label: "Sci-Fi & Fantasy", aliases: [] },
+        { active: false, label: "Science Fiction", aliases: [] },
+        { active: true, label: "Soap", aliases: [] },
+        { active: false, label: "Talk", aliases: [] },
+        { active: false, label: "Thriller", aliases: [] },
+        { active: false, label: "TV Movie", aliases: [] },
+        { active: true, label: "Shounen", aliases: [] },
+        { active: false, label: "War", aliases: [] },
+        { active: false, label: "War & Politics", aliases: [] },
+        { active: true, label: "Coming Soon", aliases: [] },
 
-        "Shounen"
+        /*
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        */
     ],
 
     _mediaSources: [
@@ -180,11 +201,15 @@ const Database = {
         return Database.getRecords(tableName, queries, "AND").length > 0;
     },
 
-    addToRecord(tableName, newRecord) {
+    addToRecord(tableName, newRecord, limit) {
         const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
         if (newRecord.id) return Database.updateInRecord(tableName, newRecord);
         newRecord.id = (records.length ? records[records.length-1].id + 1: records.length+1);
-        records.push(newRecord);
+        if (limit && records.length > limit) {
+            records.splice(0, 0, newRecord);
+            records.splice(limit, 1);
+        }
+        else records.push(newRecord);
         Database.cacheObject(tableName, records);
         return records;
     },
@@ -293,7 +318,33 @@ const Database = {
         const existInRecord = Database.existInRecord("view.me.actively-watching", [{ field: "title", value: media.title }, { field: "user_id", value: user.id }]);
         if (existInRecord) return Database.updateInRecord("view.me.actively-watching", media);;
         media.user_id = user.id;
-        Database.addToRecord("view.me.actively-watching", media);
+        Database.addToRecord("view.me.actively-watching", media, 19);
+    },
+
+    /* Settings - Genre */
+
+    getGenres(user, queries = []) {
+        let records = Database.getRecords("view.me.settings.genres", [{ field: "user_id", value: user.id }, ...queries], "AND");
+        if (!records || !records.length) records = Database._genres;
+        records.forEach(record => {
+            record.user_id = user.id;
+            Database.addToRecord("view.me.settings.genres", record);
+        });
+        return records.reduce((acc, record) => ({ ...acc, [record.label]: record }), {});
+    },
+
+    addNewGenre(user, genre) {
+        genre.user_id = user.id;
+        Database.addToRecord("view.me.settings.genres", genre);
+    },
+
+    toggleGenreActive(genre, active) {
+        genre.active = active;
+        Database.updateInRecord("view.me.settings.genres", genre);
+    },
+
+    updateSingleGenre(genre) {
+        Database.updateInRecord("view.me.settings.genres", genre);
     },
 
     /** Settings - Media Sources */
@@ -330,7 +381,6 @@ const Database = {
     toggleMediaSource(user, mediaSource, active) {
         mediaSource.active = active;
         mediaSource.user_id = user.id;
-        console.log("TO STORE", mediaSource);
         Database.updateInRecord("view.me.settings.media.sources", mediaSource);
         delete Database.___CachedUrls[user.id];
         window.location.reload();
