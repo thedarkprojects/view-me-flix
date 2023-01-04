@@ -56,8 +56,8 @@ export class RequestService extends BaseService {
         return this.report(this.transport.get(`${BaseService.BaseUrl}/log/clear`));
     }
 
-    getMediaPlugins(plugin_host) {
-        return this.report(this.transport.get(`${plugin_host}`));
+    getMediaPlugins(pluginHost) {
+        return this.report(this.transport.get(`${pluginHost}/mediaplugins/registry.json`));
     }
 
     buildMediaPluginConfig(baseUrl, mediaPlugin) {
@@ -70,17 +70,23 @@ export class RequestService extends BaseService {
     }
 
     installMediaSource(baseUrl, mediaPlugin) {
-        baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/"));
         return this.report(this.transport.get(`${BaseService.BaseUrl}/mediaplugin/plugin/install`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
     }
 
     unInstallMediaSource(baseUrl, mediaPlugin) {
-        baseUrl = baseUrl.substr(0, baseUrl.lastIndexOf("/"));
         return this.report(this.transport.get(`${BaseService.BaseUrl}/mediaplugin/plugin/uninstall`, this.buildMediaPluginConfig(baseUrl, mediaPlugin)));
     }
 
     getClientProxyAddress() {
         return this.report(this.transport.get(`${BaseService.BaseUrl}/get_client_proxies`));
+    }
+
+    getAvailableLanguages(pluginHost) {
+        return this.report(this.transport.get(`${pluginHost}/languages/registry.json`));
+    }
+
+    getLanguageData(providerUrl, language) {
+        return this.report(this.transport.get(`${providerUrl}${language.location}`));
     }
 
 }

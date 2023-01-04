@@ -26,11 +26,11 @@ function HomePreviews(props) {
             let genresWithMedias = res.data;
             const activelyWatching = Database.getActivelyWatchings(user);
             if (activelyWatching.length) {
-                genresWithMedias = { "Resume Watching": activelyWatching, ...res.data };
+                genresWithMedias = { [window.viewmore.i18nData.resume_watching]: activelyWatching, ...res.data };
             }
             const previewRollete = (genresWithMedias["Popular"] && genresWithMedias["Popular"].length) 
                 ? genresWithMedias["Popular"] 
-                : genresWithMedias["Resume Watching"];
+                : genresWithMedias[window.viewmore.i18nData.resume_watching];
             if (!previewRollete) return;
             setMoviesByGenres(genresWithMedias);
             activeMedia = previewRollete[Math.floor(Math.random() * ((previewRollete.length - 1) - 0 + 1)) + 0] || previewMovie;
@@ -56,17 +56,17 @@ function HomePreviews(props) {
                 }}>
                     <i className={previewIsFavourite ? `fa fa-minus ${user.color_scheme}-text` : "fa fa-plus"} />
                     {previewIsFavourite
-                        ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>Favorite</span>
-                        : <span>Favorite</span>}
+                        ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>{window.viewmore.i18nData.favourite}</span>
+                        : <span>{window.viewmore.i18nData.favourite}</span>}
 
                 </Button>
                 <Button onClick={() => goToMovie(activeMedia, activeMedia.final_media_link)} scheme={user.color_scheme} className="play">
                     <i className="fa fa-play" style={{ marginRight: 5 }} />
-                    <span>{activelyWatchingPreview ? "Resume Watching" : "Play"}{" " + (activeMedia?.season_episode_name || "")}</span>
+                    <span>{activelyWatchingPreview ? window.viewmore.i18nData.resume_watching : window.viewmore.i18nData.play}{" " + (activeMedia?.season_episode_name || "")}</span>
                 </Button>
                 <Button onClick={() => { delete activeMedia.final_media_link; goToMovie(activeMedia); }} scheme={Scheme.LIGHT} className="b">
                     <i className="fa fa-info" />
-                    <span>Info</span>
+                    <span>{window.viewmore.i18nData.info}</span>
                 </Button>
             </ButtonGroup>
         </div>

@@ -8,12 +8,14 @@ import Home from "./landing/Home";
 import Search from "./landing/Search";
 import Settings from "./landing/Settings";
 import Downloads from "./landing/Downloads";
+import { Database } from "../utils";
 
 function Landing() {
 
     const navigate = useNavigate();
     const location = useLocation();
     const { user, genre, cast } = location.state;
+    window.viewmore.i18nData = Database.getLanguage(user);
 
     React.useEffect(() => {
         //console.log(">>>>>>", user) 
@@ -22,16 +24,16 @@ function Landing() {
 
     return (<div className="landing">
         <TabPane scheme={user?.color_scheme} activeTabIndex={0} alignNavigator={Alignment.BOTTOM}>
-            <TabPanel title={landingIcon("fa fa-home", "Home")} contentClassName="landing-tab-content">
+            <TabPanel title={landingIcon("fa fa-home", window.viewmore.i18nData.home)} contentClassName="landing-tab-content">
                 <Home user={user} genre={genre} cast={cast}/>
             </TabPanel>
-            <TabPanel title={landingIcon("fa fa-search", "Search")}>
+            <TabPanel title={landingIcon("fa fa-search", window.viewmore.i18nData.search)}>
                 <Search user={user} />
             </TabPanel>
             {/** <TabPanel title={landingIcon("fa fa-ship", "Grand Fleet")}>
                 <Downloads user={user} />
             </TabPanel> **/}
-            <TabPanel title={landingIcon("fa fa-cog", "Settings")}>
+            <TabPanel title={landingIcon("fa fa-cog", window.viewmore.i18nData.settings)}>
                 <Settings user={user} />
             </TabPanel>
         </TabPane>

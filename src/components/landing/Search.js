@@ -24,7 +24,7 @@ function Search(props) {
 
     return (<div className="search">
         <div className="search-panel">
-            <InputText scheme={user.color_scheme} leftIcon="fa fa-search" placeholder="Search" fill onInput={(e) => setSearchResult([]) || searchInputEvent(e)}/>
+            <InputText scheme={user.color_scheme} leftIcon="fa fa-search" placeholder={window.viewmore.i18nData.search} fill onInput={(e) => setSearchResult([]) || searchInputEvent(e)}/>
         </div>
         <ScrollPanel scheme={user.color_scheme} className="movie-list vertical" ref={moviesScrollPanel}>
             {searchResult.map(movie => {

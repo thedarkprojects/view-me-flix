@@ -39,7 +39,7 @@ function WatchMedia() {
                         style={{ maxHeight: "50px" }}
                         disabled={mainMedia.servers === undefined}
                         alignIcon={Alignment.CENTER} 
-                        text={<span>{isActivelyWatching ? "Resume Watching" : "Play"}{" " + (mainMedia.season_episode_name || "")}</span>} scheme={user.color_scheme}
+                        text={<span>{isActivelyWatching ? window.viewmore.i18nData.resume_watching : window.viewmore.i18nData.play}{" " + (mainMedia.season_episode_name || "")}</span>} scheme={user.color_scheme}
                         onClick={() => playMedia()} fill />
                     {mainMedia.type !== "show" && isActivelyWatching
                         ? <Button icon={mainMedia.servers ? "fa fa-play" : "fa fa-spinner fa-spin"}
@@ -57,7 +57,7 @@ function WatchMedia() {
                             className="ws-bg-b" onClick={() => { Database.addToFavourite(mainMedia, user); setIsFavourite(Database.isFavourite(mainMedia, user)) }}
                             textOnly>
                             <i className={isFavourite ? `fa fa-minus` : "fa fa-plus"} />
-                            <span>Favourite</span>
+                            <span>{window.viewmore.i18nData.favourite}</span>
                         </Button>
                         <Button className="ws-bg-b" textOnly>
                             <i className="fa fa-share"></i>
