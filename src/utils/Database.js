@@ -515,8 +515,11 @@ const Database = {
         log_is_empty: "Log is empty",
         provider_address: "Provider Address",
         version: "Version",
-        check_new_version: "Check for new version",
-        available_languages: "Available Languages"
+        check_for_update: "Check for update",
+        available_languages: "Available Languages",
+        download: "Download",
+        new_version_desc1: "A new version is available",
+        new_version_desc2: "Continue to download view me version"
     },
 
     /* Color Map */

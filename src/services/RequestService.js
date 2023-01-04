@@ -89,4 +89,8 @@ export class RequestService extends BaseService {
         return this.report(this.transport.get(`${providerUrl}${language.location}`));
     }
 
+    checkForUpdate(providerUrl) {
+        return this.report(this.transport.get(`${providerUrl}/versioner.json`));
+    }
+
 }
