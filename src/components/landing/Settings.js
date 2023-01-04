@@ -96,7 +96,7 @@ function Settings(props) {
             <Button alignText={Alignment.LEFT} scheme={user.color_scheme} style={{ marginTop: 10, marginBottom: 20 }} 
                 text={window.viewmore.i18nData.view_middleware_log} onClick={viewMiddlewareLog} fill/>
             <Button alignText={Alignment.LEFT} scheme={Scheme.SECONDARY} style={{ marginBottom: 20 }} 
-                text={window.viewmore.i18nData.check_new_version} onClick={checkNewVersionEvent} fill/>
+                text={window.viewmore.i18nData.check_for_update} onClick={checkNewVersionEvent} fill/>
             <span styel={{ marginTop: 20 }} className="title">{window.viewmore.i18nData.version}: {Database.VERSION}</span>
         </div>
         <hr style={{ display: "none" }}/>
@@ -368,7 +368,46 @@ function Settings(props) {
     }
 
     function checkNewVersionEvent() {
-
+        loadingDialog({}, {
+            loadingIcon: "fas fa-spinner fa-pulse",
+            onLoading: (params, dialog) => {
+                requestService.checkForUpdate(pluginHostInputRef.current.value()).then((res) => {
+                    if (Database.VERSION !== res.data.version) {
+                        dialog.update({
+                            icon: null,
+                            cancelScheme: Scheme.DANGER,
+                            confirmScheme: user.color_scheme,
+                            message: (<div>{window.viewmore.i18nData.new_version_desc1}
+                                <br/>{window.viewmore.i18nData.new_version_desc2} {res.data.version}<br/></div>),
+                            confirmLabel: window.viewmore.i18nData.download,
+                            cancelLabel: window.viewmore.i18nData.close,
+                            onConfirm: () => {
+                                window.open(res.data.download_location, '_blank').focus();
+                            }
+                        });
+                    } else {
+                        dialog.update({
+                            icon: null,
+                            confirmScheme: user.color_scheme,
+                            message: "Your version of view-me is upto date",
+                            confirmLabel: window.viewmore.i18nData.close,
+                        });
+                    }
+                    //dialog.hide(); setLogDialogContent(null);
+                }).catch(err => {
+                    dialog.update({
+                        icon: "fa fa-info",
+                        message: err.message,
+                        confirmLabel: window.viewmore.i18nData.retry,
+                        cancelLabel: window.viewmore.i18nData.close,
+                        confirmScheme: user.color_scheme,
+                        onConfirm: () => {
+                            checkNewVersionEvent();
+                        }
+                    });
+                })
+            }
+        });
     }
 
 }
