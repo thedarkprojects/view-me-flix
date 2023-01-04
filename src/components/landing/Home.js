@@ -36,7 +36,7 @@ function Home(props) {
         if (!Database.getMediaUrls(user).genre.length) {
             alertDialog({
                 style: { maxWidth: 300 },
-                message: <pr>You do not have any media source activated therefor no media will be available for viewing<br/><br/></pr>,
+                message: <pr>{window.viewmore.i18nData.you_dont_have_media_sources}<br/><br/></pr>,
                 confirmLabel: "Close",
                 confirmScheme: user.color_scheme
             });
@@ -53,9 +53,9 @@ function Home(props) {
                     <span className="app-name"
                         style={{ cursor: "pointer", color: Database.getColorHex(user.color_scheme), fontSize: 50 }}
                         onClick={() => setHomeView("home")}>VM</span>
-                    <Button scheme={homeView === "shows" ? user.color_scheme : Scheme.LIGHT} text="TV Shows" textOnly onClick={() => setHomeView("shows")} />
-                    <Button scheme={homeView === "movies" ? user.color_scheme : Scheme.LIGHT} text="Movies" textOnly onClick={() => setHomeView("movies")} />
-                    <Button scheme={homeView === "favourites" ? user.color_scheme : Scheme.LIGHT} text="Favourites" textOnly onClick={() => setHomeView("favourites")} />
+                    <Button scheme={homeView === "shows" ? user.color_scheme : Scheme.LIGHT} text={window.viewmore.i18nData.tv_shows} textOnly onClick={() => setHomeView("shows")} />
+                    <Button scheme={homeView === "movies" ? user.color_scheme : Scheme.LIGHT} text={window.viewmore.i18nData.movies} textOnly onClick={() => setHomeView("movies")} />
+                    <Button scheme={homeView === "favourites" ? user.color_scheme : Scheme.LIGHT} text={window.viewmore.i18nData.favourites} textOnly onClick={() => setHomeView("favourites")} />
                 </div>
                 {selectView(homeView)}
             </ScrollPanel>);

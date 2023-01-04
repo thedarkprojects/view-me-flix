@@ -654,6 +654,11 @@ code {
     margin-left: 20px;
 }
 
+.ms-list > .item.lang > button {
+    padding-left: 0px;
+    margin-left: 0px;
+}
+
 /* generall Styles */
 
 .norseu-dialog-header {

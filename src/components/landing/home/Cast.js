@@ -36,7 +36,6 @@ function Cast(props) {
             <div className="preview" style={{ paddingTop: "50vh" }}>
                 <div className="blur" style={{ background: "linear-gradient(to bottom, transparent 0%, black 90%)" }}></div>
                 <span className="title">{previewMovie.title}</span>
-                {/* <span className="casts">Movie</span> */}
                 <ButtonGroup className="controls" fill>
                     <Button scheme={Scheme.LIGHT} className="b" onClick={() => {
                         Database.addToFavourite(activeMedia, user);
@@ -45,16 +44,16 @@ function Cast(props) {
                     }}>
                         <i className={previewIsFavourite ? `fa fa-minus ${user.color_scheme}-text` : "fa fa-plus"} />
                         {previewIsFavourite
-                            ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>Favorite</span>
-                            : <span>Favorite</span>}
+                            ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>{window.viewmore.i18nData.favourite}</span>
+                            : <span>{window.viewmore.i18nData.favourite}</span>}
                     </Button>
                     <Button onClick={() => goToMovie(activeMedia, activeMedia.final_media_link)} scheme={user.color_scheme} className="play">
                         <i className="fa fa-play" style={{ marginRight: 5 }} />
-                        <span>{activelyWatchingPreview ? "Resume Watching" : "Play"}{" " + (activeMedia?.season_episode_name || "")}</span>
+                        <span>{activelyWatchingPreview ? window.viewmore.i18nData.resume_watching : window.viewmore.i18nData.play}{" " + (activeMedia?.season_episode_name || "")}</span>
                     </Button>
                     <Button onClick={() => { delete activeMedia.final_media_link; goToMovie(activeMedia); }} scheme={Scheme.LIGHT} className="b">
                         <i className="fa fa-info" />
-                        <span>Info</span>
+                        <span>{window.viewmore.i18nData.info}</span>
                     </Button>
                 </ButtonGroup>
             </div>

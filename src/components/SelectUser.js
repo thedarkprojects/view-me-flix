@@ -65,15 +65,15 @@ function SelectUser() {
                     onInput={() => addErrorRef.current.innerText ? addErrorRef.current.innerText = null : null} fill toggleMask />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>,
-            cancelLabel: "Cancel",
-            confirmLabel: "Continue",
+            cancelLabel: window.viewmore.i18nData.cancel,
+            confirmLabel: window.viewmore.i18nData.continue,
             confirmScheme: Scheme.SUCCESS,
             onConfirm: () => {
                 if (passwordRef.current.value() === user.password) {
                     cb(user, passwordRef.current.value());
                     return;
                 }
-                addErrorRef.current.innerText = "Password does not match";
+                addErrorRef.current.innerText = window.viewmore.i18nData.password_does_not_match;
                 return true;
             }
         });
@@ -151,8 +151,8 @@ function SelectUser() {
             onConfirm: () => {
                 alertDialog({
                     message: (<p>
-                        Are you sure you want to delete this account <b>{user.username}</b>. <br />
-                        Your watch and movie data will be deleted.
+                        {window.viewmore.i18nData.sure_want_to_delete_account} <b>{user.username}</b>. <br />
+                        {window.viewmore.i18nData.your_watch_data_will_be_deleted}
                     </p>),
                     icon: "fa fa-trash-alt",
                     confirmLabel: window.viewmore.i18nData.remove_email,

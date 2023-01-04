@@ -29,13 +29,13 @@ function Movies(props) {
     return (<div className="search" style={{ height: "100%", padding: 0, backgroundImage: `url('${previewMovie.preview_image?.replace("178x268", "5000x5000")}')` }}>
         {/* <div style={{ fontWeight: "bold", fontSize: 20, padding: 20, backgroundColor: "rgba(0, 0, 0, 0.6)" }}>
             <i className="fa fa-angle-left" style={{ marginRight: 30, cursor: "pointer" }} onClick={() => props.setCurrentMovies(null)}></i>
-            <span>{"Movies"}</span>
+            <span>{{window.viewmore.i18nData.movies}}</span>
         </div> */}
         <ScrollPanel scheme={user.color_scheme} ref={moviesScrollPanel} style={{ height: "100%" }}>
             <div className="preview" style={{ paddingTop: "50vh" }}>
                 <div className="blur" style={{ background: "linear-gradient(to bottom, transparent 0%, black 90%)" }}></div>
                 <span className="title">{previewMovie.title}</span>
-                <span className="genres">Movie</span>
+                <span className="genres">{window.viewmore.i18nData.movie}</span>
                 <ButtonGroup className="controls" fill>
                     <Button scheme={Scheme.LIGHT} className="b" onClick={() => {
                         Database.addToFavourite(activeMedia, user);
@@ -44,16 +44,16 @@ function Movies(props) {
                     }}>
                         <i className={previewIsFavourite ? `fa fa-minus ${user.color_scheme}-text` : "fa fa-plus"} />
                         {previewIsFavourite
-                            ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>Favorite</span>
-                            : <span>Favorite</span>}
+                            ? <span className={previewIsFavourite ? user.color_scheme + "-text" : ""}>{window.viewmore.i18nData.favourite}</span>
+                            : <span>{window.viewmore.i18nData.favourite}</span>}
                     </Button>
                     <Button onClick={() => goToMovie(activeMedia, activeMedia.final_media_link)} scheme={user.color_scheme} className="play">
                         <i className="fa fa-play" style={{ marginRight: 5 }} />
-                        <span>{activelyWatchingPreview ? "Resume Watching" : "Play"}{" " + (activeMedia?.season_episode_name || "")}</span>
+                        <span>{activelyWatchingPreview ? window.viewmore.i18nData.resume_watching : window.viewmore.i18nData.play}{" " + (activeMedia?.season_episode_name || "")}</span>
                     </Button>
                     <Button onClick={() => { delete activeMedia.final_media_link; goToMovie(activeMedia); }} scheme={Scheme.LIGHT} className="b">
                         <i className="fa fa-info" />
-                        <span>Info</span>
+                        <span>{window.viewmore.i18nData.info}</span>
                     </Button>
                 </ButtonGroup>
             </div>

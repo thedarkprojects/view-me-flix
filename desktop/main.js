@@ -17,7 +17,7 @@ const createWindow = (url) => {
     let loaderLocation = "loader.html";
     let clientLocation = path.resolve("build/index.html");
     if (!fs.existsSync(clientLocation)) {
-        buildFolder = "build/";
+        buildFolder = __dirname + "/../build/";
         clientLocation = "build/index.html";
         loaderLocation = "desktop/loader.html"
     }
@@ -104,6 +104,7 @@ const getMediaSourcePlayerScript = (url) => {
 }
 
 app.whenReady().then(() => {
+    console.log(">>>>>>>", buildFolder)
     server = startExpressServer({ useAnotherPort: true, port: 7001, clientLocation: buildFolder }, (options) => {
         serverOptions = { ...options };
         console.log(`view more middleware running on port ${options.port}`);
@@ -128,8 +129,8 @@ const backButtonOnPlayerHtml = (url) => {
         document.getElementsByTagName('body')[0].innerHTML += (\`<div style='position: fixed; bottom: 20px; left: 20px; z-index: 999; display: flex; flex-wrap: wrap;'>
             <button onclick='window.history.go(-1); return false;'
                 style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Back</button>
-            <button onclick='window.location.reload(); return false;'
-                style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Reload</button>
+            <!--<button onclick='window.location.reload(); return false;'
+                style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Reload</button>-->
             <button onclick='window.history.go(-10); return false;'
                 style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Home</button>
         </div>\`);
