@@ -97,7 +97,7 @@ const createWindow = (url) => {
 
 let serverOptions = {};
 const getMediaSourcePlayerScript = (url) => {
-    const baseUrl = url.substr(0, url.indexOf("/", 10));
+    let baseUrl = url.substr(0, url.indexOf("/", 10));
     const ijscript = serverOptions.getPlayerInjectionScript(baseUrl);
     //console.log("TO LOAD SCRIPT", ijscript);
     return ijscript;

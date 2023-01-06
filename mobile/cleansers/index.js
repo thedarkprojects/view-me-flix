@@ -8,10 +8,18 @@ async function useCleanser(loadAndMediaPlugin, mediaPluginFolder, logger, port, 
 
 async function fetchSiteData(loadAndMediaPlugin, jsRequiredRunner, mediaPluginFolder, req, res, isRetry) {
     const actualUrl = req.query.url = (Array.isArray(req.query.url) ? req.query.url.reduce((_, r) => (r.startsWith('http') ? r : ""), "") : req.query.url);
+    const relayParams = Object.keys(req.query).reduce((acc, query) => {
+        if (query.includes("clazz") || query.includes("func") || query.includes("method") || query.includes("url") 
+            || query.includes("requires_js") || query.includes("element_to_wait_for")) {
+            return acc;
+        }
+        acc[query] = req.query[query];
+        return acc;
+    }, {});
     if (req.query.requires_js) {
-        console.log("USING PLAYWRIGHT => ", actualUrl, req.query);
+        console.log("USING PLAYWRIGHT => ", req.query, actualUrl, relayParams);
         try {
-            jsRequiredRunner(actualUrl, req, async (html) => {
+            jsRequiredRunner(actualUrl + "?" + new URLSearchParams(relayParams), req, async (html) => {
                 if (req.query.clazz === "managed") return res.json(JSON.parse(response.data));
                 useCleanser(loadAndMediaPlugin, mediaPluginFolder, req.logger, req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html, actualUrl, (result) => {
                     return res.json(result);
@@ -30,8 +38,8 @@ async function fetchSiteData(loadAndMediaPlugin, jsRequiredRunner, mediaPluginFo
             return res.json([]);
         }
     } else {
-        console.log("USING KYOFUUC => ", actualUrl, req.query);
-        ffs[(req.query.method || "get").toLowerCase()](actualUrl, { responseType: "text", ...req.query }).then(async function (response) {
+        console.log("USING KYOFUUC => ", req.query, actualUrl, relayParams);
+        ffs[(req.query.method || "get").toLowerCase()](actualUrl, { responseType: "text", params: relayParams }).then(async function (response) {
             if (req.query.clazz === "managed") return res.json(JSON.parse(response.data));
             useCleanser(loadAndMediaPlugin, mediaPluginFolder, req.logger, req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), response.data, actualUrl, (result) => {
                 return res.json(result);

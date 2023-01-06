@@ -87,7 +87,7 @@ function Genre(props) {
             resolveGenreListRsponse(Database.getActivelyWatchings(user));
             return;
         }
-        requestService.getGenreList((genreObject.length ? genreObject[0] : {}), page).then(res => {
+        requestService.getGenreList((genreObject.length ? genreObject[0] : { label: genre, aliases: []}), page).then(res => {
             setCurrentPage(page);
             if (!res.data.length) {
                 setSearchResult([...searchResult])

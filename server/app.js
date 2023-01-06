@@ -169,13 +169,14 @@ function getPlayerInjectionScript(baseUrlOrName) {
     }
     try {
         vmServeConsole.log("Trying to load plugin map from: " + `${MediaPluginFolder}/PlayerInjectionScriptsMap.json:` + 
-        fs.existsSync(`${MediaPluginFolder}/PlayerInjectionScriptsMap.json`))
+        fs.existsSync(`${MediaPluginFolder}/PlayerInjectionScriptsMap.json`), ". For base url or name:", baseUrlOrName)
         let playerInjectionScriptsMap = JSON.parse(fs.readFileSync(`${MediaPluginFolder}/PlayerInjectionScriptsMap.json`, 'utf8'));
         __CachedPlayerInjectionScripts[baseUrlOrName] = playerInjectionScriptsMap[baseUrlOrName];
+        vmServeConsole.log("The name for the player is:", __CachedPlayerInjectionScripts[baseUrlOrName], "<<", playerInjectionScriptsMap)
         return fs.readFileSync(`${MediaPluginFolder}/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
     } catch (err) {
         try {
-            vmServeConsole.log("After first Trying to load plugin map from: " + `../mobile/cleansers/mediaplugins/PlayerInjectionScriptsMap.json`)
+            vmServeConsole.log("After first Trying to load plugin map from: " + `../mobile/cleansers/mediaplugins/PlayerInjectionScriptsMap.json, with error`, err)
             let playerInjectionScriptsMap = JSON.parse(fs.readFileSync(`../mobile/cleansers/mediaplugins/PlayerInjectionScriptsMap.json`, 'utf8'));
             __CachedPlayerInjectionScripts[baseUrlOrName] = playerInjectionScriptsMap[baseUrlOrName];
             return fs.readFileSync(`${MediaPluginFolder}/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
