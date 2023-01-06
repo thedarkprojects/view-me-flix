@@ -5,12 +5,12 @@ export class RequestService extends BaseService {
 
     search(value, page) {
         value = value.replace(/ /g, '-');
-        return this.report(this.aggregateListFromSites(Database.getMediaUrls(this.user).search.map(v => v.format(value)), { params: { page }}, true), (response) => {
+        return this.report(this.aggregateListFromSites(Database.getMediaUrls(this.user).search.map(v => v.format(value, page)), { params: { page }}, true), (response) => {
             //console.log("RESPONSE:::::::::", response);
         });
     }
 
-    getPopularComingSoonOrGenreLink(genre) {
+    getPopularComingSoonOrGenreLink(genre, page = 1) {
         genre = genre.label + genre.aliases.join("&");
         const urls = Database.getMediaUrls(this.user);
         genre = genre.replace(/& /g,'').replace(/\s/g, '-');
@@ -18,25 +18,27 @@ export class RequestService extends BaseService {
             ? urls.popular
             : genre === "Coming-Soon"
                 ? urls.coming_soon
-                : urls.genre.map(genreUrl => genreUrl.format(genre)) ;
+                : urls.genre.map(genreUrl => genreUrl.format(genre, page)) ;
     }
 
     getGenreList(genre, page) {
-        const urls = this.getPopularComingSoonOrGenreLink(genre);
+        const urls = this.getPopularComingSoonOrGenreLink(genre, page);
         return this.report(this.aggregateListFromSites(urls, { params: { page }}, true));
     }
 
     getCastList(cast, page) {
         cast = cast.replace(/& /g,'').replace(/\s/g, '-');
-        return this.report(this.aggregateListFromSites(Database.getMediaUrls(this.user).cast.map(v => v.format(cast)), { params: { page }}, true));
+        return this.report(this.aggregateListFromSites(Database.getMediaUrls(this.user).cast.map(v => v.format(cast, page)), { params: { page }}, true));
     }
 
     getMoviesList(page) {
-        return this.report(this.aggregateListFromSites(Database.getMediaUrls(this.user).movies, { params: { page }}, true));
+        const urls = Database.getMediaUrls(this.user).movies.map(url => url.format(page));
+        return this.report(this.aggregateListFromSites(urls, { params: { page }}, true));
     }
 
     getTvShowsList(page) {
-        return this.report(this.aggregateListFromSites(Database.getMediaUrls(this.user).tv_shows, { params: { page }}, true));
+        const urls = Database.getMediaUrls(this.user).tv_shows.map(url => url.format(page));
+        return this.report(this.aggregateListFromSites(urls, { params: { page }}, true));
     }
 
     getMovieDetail(url, scrapperClass) {

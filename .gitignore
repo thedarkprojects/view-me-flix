@@ -107,5 +107,7 @@ build
 .DS_Store
 
 
-server/cleansers/mediaplugins/W5123Animes*
-server/cleansers/mediaplugins/FZMoviesNet*
+**/cleansers/mediaplugins/W5123Animes*
+**/cleansers/mediaplugins/FZMoviesNet*
+**/cleansers/mediaplugins/Youtube*
+**/cleansers/mediaplugins/XVideos*
