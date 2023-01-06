@@ -17,6 +17,7 @@ import { WebView } from 'react-native-webview';
 import RNFS from 'react-native-fs';
 import { fetchSiteData, Soap2DayUsPlayerTrimmerHardcoded } from './cleansers';
 const ffs = require("kyofuuc");
+const { default: parse } = require("node-html-parser");
 const { CreateRingBuffer } = require('./thegreatbridge');
 
 /*RNFS.readFileAssets('custom/index.html').then((res) => {
@@ -53,7 +54,7 @@ const App = () => {
     );
 
     function onWebViewMessage(payload) {
-        //console.log("FROM WEBVIEW", payload.nativeEvent.data);
+        (vmServeConsoleCache || console).log("FROM WEBVIEW", payload.nativeEvent.data);
     }
 
     function onNavigationStateChangeEvent(state) {
@@ -226,24 +227,15 @@ class ServerProxy {
 
 }
 
+const MediaPlugins = {};
 async function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
-    //const mediaPluginClassSource = await RNFS.readFile(`${MediaPluginFolder}/${name}.js`, 'utf8');
-    const mediaPlugin = eval(`Soap2DayUs = {
-
-        ffs: null,
-        parse: null,
-
-        buildFullUrl() {
-            return Soap2DayUs.ffs.get;
-        },
-        
-    }; Soap2DayUs`);
-    //const fct2 = eval(fctStr2);
-    console.log("BOOMER", mediaPlugin.buildFullUrl())
-
-    //const fctStr2 = "(function b(a) { return a;})";
-    //const fct2 = eval(fctStr2);
-    //console.log("BOOM", fct2, fct2(ffs))
+    if (MediaPlugins[name]) return MediaPlugins[name];
+    const mediaPluginClassSource = await RNFS.readFile(`${mediaPluginFolder}/${name}.js`, 'utf8');
+    const mediaPlugin = eval(mediaPluginClassSource.replace("module.exports =", ""));
+    mediaPlugin.ffs = ffs; mediaPlugin.parse = parse; mediaPlugin.logger = logger;
+    mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
+    MediaPlugins[name] = mediaPlugin;
+    return mediaPlugin;
 }
 
 function jsRequiredRunner(actualUrl, req, cb) {
@@ -251,7 +243,7 @@ function jsRequiredRunner(actualUrl, req, cb) {
 }
 
 const debugging = `
-  /*const consoleLog = (type, log) => window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'Console', 'data': {'type': type, 'log': log}}));
+  const consoleLog = (type, log) => window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'Console', 'data': {'type': type, 'log': log}}));
   console = {
       log: (log) => consoleLog('log', log),
       debug: (log) => consoleLog('debug', log),
@@ -259,7 +251,7 @@ const debugging = `
       warn: (log) => consoleLog('warn', log),
       error: (log) => consoleLog('error', log),
     };
-    //console.log(document.documentElement.innerHTML);*/
+    //console.log(document.documentElement.innerHTML);
 `;
 
 export default App;
