@@ -56,7 +56,7 @@ function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
     try {
         if (!MediaPlugins[name]) {
             const mediaPlugin = require(path.resolve(`${mediaPluginFolder}/${name}.js`));
-            mediaPlugin.ffs = ffs; mediaPlugin.parse = parse; mediaPlugin.logger = logger;
+            mediaPlugin.ffs = ffs.init({ responseType: "text" }); mediaPlugin.parse = parse; mediaPlugin.logger = logger;
             mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
             MediaPlugins[name] = mediaPlugin;
         }
@@ -65,7 +65,7 @@ function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
         logger.error(`Error loading ${name} Before checking installed folder`, err);
         try {
             const mediaPlugin = require(`../mobile/cleansers/mediaplugins/${name}`);
-            mediaPlugin.ffs = ffs; mediaPlugin.parse = parse; mediaPlugin.logger = logger;
+            mediaPlugin.ffs = ffs.init({ responseType: "text" }); mediaPlugin.parse = parse; mediaPlugin.logger = logger;
             mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
             MediaPlugins[name] = mediaPlugin;
             return MediaPlugins[name];
