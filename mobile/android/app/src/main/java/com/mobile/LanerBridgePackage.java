@@ -245,6 +245,18 @@ public class LanerBridgePackage implements ReactPackage {
             }
         }
 
+        @ReactMethod
+        public void response_closeWithBytes(String responseKey, String dataBase65, Callback cb) {
+            try {
+                Log.e(">>>>>>>>>TEST", dataBase65);
+                Objects.requireNonNull(getResponseFromKey(responseKey))
+                        .close(dataBase65);
+                cb.invoke(null, true);
+            } catch (Exception e){
+                cb.invoke(e.toString(), false);
+            }
+        }
+
         // non server
 
         @ReactMethod
