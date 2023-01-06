@@ -104,6 +104,8 @@ build
 
 # TernJS port file
 .tern-port
+.DS_Store
 
 
 server/cleansers/mediaplugins/W5123Animes*
+server/cleansers/mediaplugins/FZMoviesNet*
