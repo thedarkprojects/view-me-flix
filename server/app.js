@@ -4,9 +4,11 @@ const path = require("path");
 const ffs = require("kyofuuc");
 const express = require('express');
 const { chromium } = require("playwright");
-const { fetchSiteData, Soap2DayUsPlayerTrimmerHardcoded } = require("../mobile/cleansers");
+const { default: parse } = require("node-html-parser");
 const { CreateRingBuffer } = require('../mobile/thegreatbridge');
+const { fetchSiteData, Soap2DayUsPlayerTrimmerHardcoded } = require("../mobile/cleansers");
 const app = express();
+
 
 const MediaPluginFolder = path.resolve((process.env.APPDATA || (process.platform == 'darwin' 
         ? process.env.HOME + '/Library/Preferences' 
@@ -54,7 +56,7 @@ function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
     try {
         if (!MediaPlugins[name]) {
             const mediaPlugin = require(path.resolve(`${mediaPluginFolder}/${name}.js`));
-            mediaPlugin.logger = logger;
+            mediaPlugin.ffs = ffs; mediaPlugin.parse = parse; mediaPlugin.logger = logger;
             mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
             MediaPlugins[name] = mediaPlugin;
         }
@@ -64,7 +66,7 @@ function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
         try {
             if (!MediaPlugins[name]) {
                 const mediaPlugin = require(`../mobile/cleansers/mediaplugins/${name}`);
-                mediaPlugin.logger = logger;
+                mediaPlugin.ffs = ffs; mediaPlugin.parse = parse; mediaPlugin.logger = logger;
                 mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
                 MediaPlugins[name] = mediaPlugin;
             }
