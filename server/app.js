@@ -64,12 +64,10 @@ function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
     } catch (err) {
         logger.error(`Error loading ${name} Before checking installed folder`, err);
         try {
-            if (!MediaPlugins[name]) {
-                const mediaPlugin = require(`../mobile/cleansers/mediaplugins/${name}`);
-                mediaPlugin.ffs = ffs; mediaPlugin.parse = parse; mediaPlugin.logger = logger;
-                mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
-                MediaPlugins[name] = mediaPlugin;
-            }
+            const mediaPlugin = require(`../mobile/cleansers/mediaplugins/${name}`);
+            mediaPlugin.ffs = ffs; mediaPlugin.parse = parse; mediaPlugin.logger = logger;
+            mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
+            MediaPlugins[name] = mediaPlugin;
             return MediaPlugins[name];
         } catch (err) {
             logger.error(err);

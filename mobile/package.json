@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "kyofuuc": "^0.0.2",
+    "node-html-parser": "^6.1.4",
     "playwright": "^1.29.1",
     "react": "18.1.0",
     "react-native": "0.70.6",
     "react-native-fs": "^2.20.0",
+    "react-native-html-parser": "^0.1.0",
     "react-native-webview": "^11.26.0"
   },
   "devDependencies": {
