@@ -104,7 +104,7 @@ const getMediaSourcePlayerScript = (url) => {
 }
 
 app.whenReady().then(() => {
-    console.log(">>>>>>>", buildFolder)
+    //console.log(">>>>>>>", buildFolder)
     server = startExpressServer({ useAnotherPort: true, port: 7001, clientLocation: buildFolder }, (options) => {
         serverOptions = { ...options };
         console.log(`view more middleware running on port ${options.port}`);

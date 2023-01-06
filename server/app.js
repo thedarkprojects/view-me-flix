@@ -3,42 +3,14 @@ const fs = require('fs');
 const path = require("path");
 const ffs = require("kyofuuc");
 const express = require('express');
-const { fetchSiteData } = require("./cleansers");
+const { chromium } = require("playwright");
+const { fetchSiteData, Soap2DayUsPlayerTrimmerHardcoded } = require("../mobile/cleansers");
+const { CreateRingBuffer } = require('../mobile/thegreatbridge');
 const app = express();
 
 const MediaPluginFolder = path.resolve((process.env.APPDATA || (process.platform == 'darwin' 
         ? process.env.HOME + '/Library/Preferences' 
         : process.env.HOME + "/.local/share")) + "/view.me/server/cleansers/mediaplugins");
-
-function censor(censor) {
-    var i = 0;
-    
-    return function(key, value) {
-      if(i !== 0 && typeof(censor) === 'object' && typeof(value) == 'object' && censor == value) 
-        return '[Circular]'; 
-      
-      if(i >= 29) // seems to be a harded maximum of 30 serialized objects?
-        return '[Unknown]';
-      
-      ++i; // so we know we aren't using the original object anymore
-      
-      return value;  
-    }
-  }
-
-const CreateRingBuffer = function(length){
-
-    var pointer = 0, buffer = []; 
-  
-    return {
-        buffer,
-      get  : function(key){return this.buffer[key];},
-      push : function(...items){
-        buffer[pointer] = items.map(item => JSON.stringify(item, censor(item))).join(" ");
-        pointer = (length + pointer +1) % length;
-      }
-    };
-  };
 
 let logStore = CreateRingBuffer(5000);
 
@@ -76,16 +48,61 @@ app.get('/ext/raw', async (req, res) => {
     });
 });
 
+
+const MediaPlugins = {};
+function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
+    try {
+        if (!MediaPlugins[name]) {
+            const mediaPlugin = require(path.resolve(`${mediaPluginFolder}/${name}.js`));
+            mediaPlugin.logger = logger;
+            mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
+            MediaPlugins[name] = mediaPlugin;
+        }
+        return MediaPlugins[name];
+    } catch (err) {
+        logger.error(`Error loading ${name} Before checking installed folder`, err);
+        try {
+            if (!MediaPlugins[name]) {
+                const mediaPlugin = require(`../mobile/cleansers/mediaplugins/${name}`);
+                mediaPlugin.logger = logger;
+                mediaPlugin.buildProxyPath = (url, params) => `http://127.0.0.1:${port}/ext/raw?method=GET&url=${url}&${params}`;
+                MediaPlugins[name] = mediaPlugin;
+            }
+            return MediaPlugins[name];
+        } catch (err) {
+            logger.error(err);
+            return Object.values(MediaPlugins)[0];
+        }
+    }
+}
+
+let browser, context, page;
+async function jsRequiredRunner(actualUrl, req, cb) {
+    if (!browser) browser = await chromium.launch();
+    if (!context) context = await browser.newContext();
+    if (!page) page = await context.newPage();
+    await page.goto(actualUrl);
+    if (req.query.element_to_wait_for) {
+        await page.click(req.query.element_to_wait_for, {timeout: 9000});
+    }
+    page.content().then(async function (html, req) {
+        cb(html, req);
+    }).catch(function (err) {
+        vmServeConsole.error(err);
+        return res.json([]);
+    });
+}
+
 app.get('/ext/json', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
     if (!req.query.url) return res.json([]);
-    await fetchSiteData(MediaPluginFolder, req, res);
+    await fetchSiteData(loadAndMediaPlugin, jsRequiredRunner, MediaPluginFolder, req, res);
 });
 
 app.get('/favicon.ico', (req, res) => res.send(`success`));
 
 
-// tests
+// plugin setups
 
 app.get('/mediaplugin/plugin/install', async (req, res) => {
     res.set('Access-Control-Allow-Origin', '*');
@@ -147,7 +164,7 @@ function getPlayerInjectionScript(baseUrlOrName) {
         try {
             return fs.readFileSync(`${MediaPluginFolder}/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
         } catch (err) {
-            return fs.readFileSync(`mediaplugins/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
+            return fs.readFileSync(`../mobile/cleansers/mediaplugins/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
         }
     }
     try {
@@ -158,8 +175,8 @@ function getPlayerInjectionScript(baseUrlOrName) {
         return fs.readFileSync(`${MediaPluginFolder}/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
     } catch (err) {
         try {
-            vmServeConsole.log("After first Trying to load plugin map from: " + `mediaplugins/PlayerInjectionScriptsMap.json`)
-            let playerInjectionScriptsMap = JSON.parse(fs.readFileSync(`mediaplugins/PlayerInjectionScriptsMap.json`, 'utf8'));
+            vmServeConsole.log("After first Trying to load plugin map from: " + `../mobile/cleansers/mediaplugins/PlayerInjectionScriptsMap.json`)
+            let playerInjectionScriptsMap = JSON.parse(fs.readFileSync(`../mobile/cleansers/mediaplugins/PlayerInjectionScriptsMap.json`, 'utf8'));
             __CachedPlayerInjectionScripts[baseUrlOrName] = playerInjectionScriptsMap[baseUrlOrName];
             return fs.readFileSync(`${MediaPluginFolder}/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8');
         } catch (err) {
@@ -233,24 +250,6 @@ function startExpressServer(options, cb) {
     });
     return listener;
 }
-
-const Soap2DayUsPlayerTrimmerHardcoded = `
-let getSiblings = n => [...n.parentElement.children].filter(c=>c!=n)
-function removeElementExcept(survivor) {
-    if (!survivor) return;
-    const parent = survivor.parentElement;
-    if (survivor === document || !parent) return;
-    const siblings = getSiblings(survivor);
-    for (const sibling of siblings) {
-    if (sibling.tagName === 'HEAD') continue;
-        sibling.remove();
-    }
-    removeElementExcept(parent);
-}
-const playerElement = document.getElementsByClassName('watching_player-area')[0];
-removeElementExcept(playerElement);
-//document.getElementById("overlay-center").remove();
-`;
 
 function prepareMediaPluginFolder() {
     if (fs.existsSync(`${MediaPluginFolder}`)) return;

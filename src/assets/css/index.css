@@ -295,10 +295,14 @@ code {
 }
 
 .preview>.title {
+    display: flex;
+    min-height: 200px;
+    align-items: flex-end;
     z-index: 1;
     font-size: 3em;
     max-width: 500px;
     text-align: center;
+    margin-bottom: 30px;
 }
 
 .preview>.genres {

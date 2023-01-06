@@ -21,7 +21,7 @@ async function fetchSiteData(req, res, isRetry) {
                 return res.json(await useCleanser((req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html, req.query.url));
             }).catch(function (err) {
                 console.error(err);
-                return res.send([]);
+                return res.json([]);
             });
         } catch (err) {
             if (!isRetry) {
@@ -29,7 +29,7 @@ async function fetchSiteData(req, res, isRetry) {
                 fetchSiteData(req, res, true);
                 return;
             }
-            return res.send([]);
+            return res.json([]);
         }
     } else {
         console.log("USING KYOFUUC => ", req.query);
@@ -40,7 +40,7 @@ async function fetchSiteData(req, res, isRetry) {
             return res.json(await useCleanser((req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), response.data, req.query.url));
         }).catch(function (err) {
             console.error(err);
-            return res.send([]);
+            return res.json([]);
         });
     }
 }

@@ -3,13 +3,13 @@ const ffs = require("kyofuuc").init({
 });
 const { default: parse } = require("node-html-parser");
 
-module.exports = class Soap2DayUs {
+module.exports = Soap2DayUs = {
 
-    static buildFullUrl(part) {
+    buildFullUrl(part) {
         return part.startsWith("/") ? `https://soap2day.rs${part}` : part;
-    }
+    },
 
-    static cleanMoviesList(html, url, cb) {
+    cleanMoviesList(html, url, cb) {
         const result = [];
         const root = parse(html);
         const movies = root.querySelectorAll('.flw-item');
@@ -26,10 +26,10 @@ module.exports = class Soap2DayUs {
             });
         }
         cb(result);
-    }
+    },
 
     // base
-    static async cleanMoviePage(html, url, cb) {
+    async cleanMoviePage(html, url, cb) {
         const result = {};
         const servers = [];
         const seasons = [];

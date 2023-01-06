@@ -28,9 +28,11 @@ function HomePreviews(props) {
             if (activelyWatching.length) {
                 genresWithMedias = { [window.viewmore.i18nData.resume_watching]: activelyWatching, ...res.data };
             }
-            const previewRollete = (genresWithMedias["Popular"] && genresWithMedias["Popular"].length) 
-                ? genresWithMedias["Popular"] 
-                : genresWithMedias[window.viewmore.i18nData.resume_watching];
+            const previewRollete = ((genresWithMedias["Popular"] && genresWithMedias["Popular"].length)
+                ? genresWithMedias["Popular"]
+                : ((genresWithMedias[window.viewmore.i18nData.resume_watching] && genresWithMedias[window.viewmore.i18nData.resume_watching].length)
+                    ? genresWithMedias[window.viewmore.i18nData.resume_watching]
+                    : Object.values(genresWithMedias)[0]));
             if (!previewRollete) return;
             setMoviesByGenres(genresWithMedias);
             activeMedia = previewRollete[Math.floor(Math.random() * ((previewRollete.length - 1) - 0 + 1)) + 0] || previewMovie;
