@@ -331,11 +331,13 @@ const Database = {
 
     getGenres(user, queries = []) {
         let records = Database.getRecords("view.me.settings.genres", [{ field: "user_id", value: user.id }, ...queries], "AND");
-        if (!records || !records.length) records = Database._genres;
-        records.forEach(record => {
-            record.user_id = user.id;
-            Database.addToRecord("view.me.settings.genres", record);
-        });
+        if ((!records || !records.length) && !queries.length) {
+            records = Database._genres;
+            records.forEach(record => {
+                record.user_id = user.id;
+                Database.addToRecord("view.me.settings.genres", record);
+            });
+        }
         return records.reduce((acc, record) => ({ ...acc, [record.label]: record }), {});
     },
 
