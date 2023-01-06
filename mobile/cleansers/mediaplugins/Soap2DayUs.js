@@ -1,9 +1,8 @@
-const ffs = require("kyofuuc").init({
-    responseType: "text"
-});
-const { default: parse } = require("node-html-parser");
 
 module.exports = Soap2DayUs = {
+
+    ffs: null,
+    parse: null,
 
     buildFullUrl(part) {
         return part.startsWith("/") ? `https://soap2day.rs${part}` : part;
@@ -11,7 +10,7 @@ module.exports = Soap2DayUs = {
 
     cleanMoviesList(html, url, cb) {
         const result = [];
-        const root = parse(html);
+        const root = Soap2DayUs.parse(html);
         const movies = root.querySelectorAll('.flw-item');
         for (const movie of movies) {
             const fileNameEL = movie.querySelector('.film-name');
@@ -34,7 +33,7 @@ module.exports = Soap2DayUs = {
         const servers = [];
         const seasons = [];
         const similarMovies = [];
-        const root = parse(html);
+        const root = Soap2DayUs.parse(html);
         result.source = "soap2day.rs";
         result.scrapper_class_name = "Soap2DayUs";
         result.synopsis = root.querySelector(".section-description").querySelector("p").text.trim();
@@ -91,10 +90,10 @@ module.exports = Soap2DayUs = {
         }
         // WHY? for speed sake dont want to wait 5 minute and above to fetch series
         // with over 20 seasons, call the requests in threads then report on complete
-        Promise.all(seasons.map((season, index) => ffs.get(season.episodes_link, { index }))).then(responses => {
+        Promise.all(seasons.map((season, index) => Soap2DayUs.ffs.get(season.episodes_link, { index }))).then(responses => {
             responseCounter -= seasons.length;
             responses.forEach((res, index) => {
-                const epRoot = parse(res.body);
+                const epRoot = Soap2DayUs.parse(res.body);
                 const eps = epRoot.querySelectorAll(".nav-link");
                 responseCounter += eps.length;
                 eps.forEach((ep, eindex) => {
@@ -102,10 +101,10 @@ module.exports = Soap2DayUs = {
                         title: ep.text.trim(), servers: []
                     });
                     const epId = ep.getAttribute("data-id");
-                    ffs.get(`https://soap2day.rs/ajax/v2/episode/servers/${epId}`, { eindex }).then((sres) => {
+                    Soap2DayUs.ffs.get(`https://soap2day.rs/ajax/v2/episode/servers/${epId}`, { eindex }).then((sres) => {
                         const epServers = [];
                         responseCounter -= 1;
-                        const serverRoot = parse(sres.body);
+                        const serverRoot = Soap2DayUs.parse(sres.body);
                         const serverEls = serverRoot.querySelectorAll(".nav-link");
                         serverEls.forEach((serverEl, sindex) => {
                             const linkId = serverEl.getAttribute("data-id");
