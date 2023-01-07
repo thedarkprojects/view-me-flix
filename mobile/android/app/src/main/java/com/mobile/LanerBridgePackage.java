@@ -96,7 +96,7 @@ public class LanerBridgePackage implements ReactPackage {
                         : new Server(options.getInt("port"));
                 servers.add(server);
                 server.addExceptor((thrower, ex) -> {
-                    ex.printStackTrace();
+                    Log.e("VIEW.ME.MOBILE", ex.getMessage(), ex);
                     WritableMap params = Arguments.createMap();
                     params.putString("errorMessage", ex.toString());
                     params.putInt("errorPort", options.getInt("port"));
@@ -112,7 +112,7 @@ public class LanerBridgePackage implements ReactPackage {
                         sendEvent(reactContext, "LanerServerListener_"+serverKey, params);
                         response.appendHeader("Access-Control-Allow-Origin", "*");
                     } catch (ResponseHeaderException | IOException e) {
-                        e.printStackTrace();
+                        Log.e("VIEW.ME.MOBILE", e.getMessage(), e);
                     }
                 });
             }
@@ -122,7 +122,7 @@ public class LanerBridgePackage implements ReactPackage {
                         Server server = new Server(inetAddress.getHostAddress(), options.getInt("port"));
                         servers.add(server);
                         server.addExceptor((thrower, ex) -> {
-                            ex.printStackTrace();
+                            Log.e("VIEW.ME.MOBILE", ex.getMessage(), ex);
                             WritableMap params = Arguments.createMap();
                             params.putString("errorMessage", ex.toString());
                             params.putInt("errorPort", options.getInt("port"));
@@ -139,7 +139,7 @@ public class LanerBridgePackage implements ReactPackage {
                                 sendEvent(reactContext, "LanerServerListener_"+serverKey, params);
                                 response.appendHeader("Access-Control-Allow-Origin", "*");
                             } catch (ResponseHeaderException | IOException e) {
-                                e.printStackTrace();
+                                Log.e("VIEW.ME.MOBILE", e.getMessage(), e);
                             }
                         });
                     }
@@ -151,6 +151,9 @@ public class LanerBridgePackage implements ReactPackage {
             lbOptions.putString("serverKey", serverKey);
             lbOptions.putInt("port", options.getInt("port"));
             lbOptions.putString("ipAddress", servers.get(0).getIpAddress());
+            Log.d("VIEW.ME.MOBILE", "SUCCESSFULLY STARTED THE SERVER AT: "
+                    + servers.get(0).getIpAddress() + ":" + options.getInt("port")
+                    + ". Address Count: " + servers.size());
             cb.invoke(null, lbOptions);
         }
 
@@ -165,7 +168,7 @@ public class LanerBridgePackage implements ReactPackage {
                 endpointRoutersMap.remove(serverKey);
                 cb.invoke(null, true);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("VIEW.ME.MOBILE", e.getMessage(), e);
                 cb.invoke(e.toString(), null);
             }
         }
@@ -213,10 +216,12 @@ public class LanerBridgePackage implements ReactPackage {
         }
 
         @ReactMethod
-        public void response_setStatusCode(String responseKey, String statusCode, Callback cb) {
+        public void response_setStatusCode(String responseKey, Double statusCode, Callback cb) {
             try {
                 Objects.requireNonNull(getResponseFromKey(responseKey))
-                        .setStatusCode(StatusCode.valueOf(statusCode));
+                        .setStatusCode(statusCode == 500
+                                ? StatusCode.INTERNAL_SERVER_ERROR
+                                : StatusCode.OK);
                 cb.invoke(null, true);
             } catch (Exception e){
                 cb.invoke(e.toString(), false);
@@ -270,7 +275,7 @@ public class LanerBridgePackage implements ReactPackage {
                 }
                 cb.invoke(null, ipv4Addresses);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("VIEW.ME.MOBILE", e.getMessage(), e);
                 cb.invoke(e.toString(), false);
             }
         }
@@ -318,7 +323,7 @@ public class LanerBridgePackage implements ReactPackage {
                 }
                 serversMap = new HashMap<>();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("VIEW.ME.MOBILE", e.getMessage(), e);
                 WritableMap params = Arguments.createMap();
                 params.putString("errorMessage", e.toString());
                 sendEvent(reactContext, "LanerServersMurderError", params);

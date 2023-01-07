@@ -16,10 +16,11 @@ async function fetchSiteData(loadAndMediaPlugin, jsRequiredRunner, mediaPluginFo
         acc[query] = req.query[query];
         return acc;
     }, {});
+    const finalUrl = Object.keys(relayParams).length ? actualUrl + "?" + new URLSearchParams(relayParams) : actualUrl;
     if (req.query.requires_js) {
-        console.log("USING PLAYWRIGHT => ", req.query, actualUrl, relayParams);
+        console.log("USING PLAYWRIGHT => ", req.query, actualUrl, relayParams, finalUrl);
         try {
-            jsRequiredRunner(actualUrl + "?" + new URLSearchParams(relayParams), req, async (html) => {
+            jsRequiredRunner(finalUrl, req, async (html) => {
                 if (req.query.clazz === "managed") return res.json(JSON.parse(response.data));
                 useCleanser(loadAndMediaPlugin, mediaPluginFolder, req.logger, req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), html, actualUrl, (result) => {
                     return res.json(result);
@@ -38,7 +39,7 @@ async function fetchSiteData(loadAndMediaPlugin, jsRequiredRunner, mediaPluginFo
             return res.json([]);
         }
     } else {
-        console.log("USING KYOFUUC => ", req.query, actualUrl, relayParams);
+        console.log("USING KYOFUUC => ", req.query, actualUrl, relayParams, finalUrl);
         ffs[(req.query.method || "get").toLowerCase()](actualUrl, { responseType: "text", params: relayParams }).then(async function (response) {
             if (req.query.clazz === "managed") return res.json(JSON.parse(response.data));
             useCleanser(loadAndMediaPlugin, mediaPluginFolder, req.logger, req.socket.localPort, (req.query.clazz || "Soap2DayUs"), (req.query.func || "cleanMoviesList"), response.data, actualUrl, (result) => {
