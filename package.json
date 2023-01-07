@@ -44,7 +44,9 @@
         "files": [
             "build/**/*",
             "desktop/**/*",
-            "server/**/*"
+            "server/**/*",
+            "mobile/cleansers/**/*",
+            "mobile/thegreatbridge.js"
         ],
         "directories": {
             "buildResources": "desktop"

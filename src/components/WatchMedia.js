@@ -20,7 +20,7 @@ function WatchMedia() {
     const [mainMedia, setMainMedia] = React.useState(media);
     const [isFavourite, setIsFavourite] = React.useState(Database.isFavourite(mainMedia, user));
     const [isActivelyWatching, setIsActivelyWatching] = React.useState(Database.isActivelyWatching(user, mainMedia));
-    const [selectedSeasonEpisodes, setSelectedSeasonEpisodes] = React.useState(mainMedia.type === "show" ? ((mainMedia?.seasons) ? mainMedia?.seasons[(cMedia || mainMedia).season_index || 0].episodes : []) : []);
+    const [selectedSeasonEpisodes, setSelectedSeasonEpisodes] = React.useState(mainMedia.type === "show" ? ((mainMedia?.seasons) ? mainMedia?.seasons[(mainMedia || cMedia).season_index || 0].episodes : []) : []);
 
     React.useEffect(() => {
         cMedia = mainMedia;
@@ -146,7 +146,7 @@ function WatchMedia() {
             message: (<iframe style={{ width: "100vw", height: "85vh" }}
                 width="100%"
                 height="100%"
-                src={`https://www.youtube.com/embed/2942BB1JXFk?enablejsapi=1&controls=0&autoplay=1`}
+                src={`https://www.youtube.com/v/2942BB1JXFk?enablejsapi=1&controls=0&autoplay=1`}
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-mainMedia; gyroscope; picture-in-picture"
                 allowFullScreen
