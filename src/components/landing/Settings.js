@@ -79,9 +79,9 @@ function Settings(props) {
             <span className="title">{window.viewmore.i18nData.middleware_address}</span>
             <span style={{ marginTop: 10, marginBottom: 3 }}>{window.viewmore.i18nData.your_personal_middleware_address}: <b>{BaseService.StartupBaseUrl}</b></span>
             <span style={{ marginBottom: 5 }}>{window.viewmore.i18nData.network_proxy_client_addresses}: 
-            {clientProxyAddresses.map((clientProxyAddress, index) => <a key={index} style={{ marginLeft: 2, marginRight: 2 }} target="_blank" href={clientProxyAddress}>{clientProxyAddress}/index.html</a>)}</span>
+            {clientProxyAddresses.map((clientProxyAddress, index) => <a key={index} style={{ marginLeft: 2, marginRight: 2 }} target="_blank" href={clientProxyAddress}>{clientProxyAddress}/client</a>)}</span>
             <span className="norseu-warning-text" style={{ marginBottom: 10 }}>{window.viewmore.i18nData.network_proxy_client_addresses_desc1} 
-                ({clientProxyAddresses.map((clientProxyAddress, index) => <a key={index} style={{ marginLeft: 2, marginRight: 2 }} target="_blank" href={clientProxyAddress}>{clientProxyAddress}/index.html</a>)}) 
+                ({clientProxyAddresses.map((clientProxyAddress, index) => <a key={index} style={{ marginLeft: 2, marginRight: 2 }} target="_blank" href={clientProxyAddress}>{clientProxyAddress}/client</a>)}) 
                 {window.viewmore.i18nData.network_proxy_client_addresses_desc2}</span>
             <InputText style={{ marginBottom: 25, marginTop: 10 }} ref={middlewareAddressRef}
                 defaultValue={BaseService.BaseUrl}
