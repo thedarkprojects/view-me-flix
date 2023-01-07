@@ -498,7 +498,7 @@ const Database = {
         middleware_address: "Middleware Address",
         your_personal_middleware_address: "Your personal middleware address",
         network_proxy_client_addresses: "Network Proxy Client Addresses",
-        network_proxy_client_addresses_desc1: "For device unable to download the app, visit any of these proxy client address ",
+        network_proxy_client_addresses_desc1: "For device unable to download the app (damn it iOS), visit any of these proxy client address ",
         network_proxy_client_addresses_desc2: " in your browser to access the application. Note that you must be connected to the same network (Wifi, Ethernet e.t.c.) as this instance.",
         custom_middleware_address_with_port: "Custom middleware address (with port)",
         custom_middleware_address_with_port_desc: "Changing your middleware address means that you will be fetching media through the specified address (usually another user view more middleware). Your middlware address works if you are on the same network usually Wifi, Ethernet or WAN. If you are not getting any media from the set middleware address specified in the text box change the value to your personal middleware address ",

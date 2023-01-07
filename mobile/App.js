@@ -56,15 +56,15 @@ const App = () => {
     return (
         <SafeAreaView style={{ backgroundColor: "black", height: "100%" }}>
             <StatusBar barStyle={'light-content'} backgroundColor={"black"} />
-            <WebView containerStyle={{ display: (pageIsLoading ? null : "none") }} source={jsRequiredUrl} injectedJavaScript={jsLoadingInjection}
-                onMessage={onJsLoaderWebViewMessage} onShouldStartLoadWithRequest={() => false} />
+            <WebView containerStyle={{ display: (pageIsLoading ? null : "none") }} source={jsRequiredUrl} injectedJavaScript={jsLoaderElementToWaitFor + "\n" + jsLoadingInjection}
+                onMessage={onJsLoaderWebViewMessage} onShouldStartLoadWithRequest={() => true} />
             <WebView allowsFullscreenVideo={true} thirdPartyCookiesEnabled={false} javaScriptCanOpenWindowsAutomatically={false}
                 allowFileAccess={true} setSupportMultipleWindows={false} originWhitelist={["file://", "http://", "https://"]}
                 containerStyle={{ display: (!pageIsLoading ? null : "none") }} ref={webViewRef} injectedJavaScript={debugging} onMessage={onWebViewMessage}
                 onNavigationStateChange={onNavigationStateChangeEvent}
                 style={{ backgroundColor: 'white' }} source={clientSource} onShouldStartLoadWithRequest={(request) => {
                     for (const superWhitelistedUrl of superWhitelistedUrls) {
-                        if (request.url.startsWith(superWhitelistedUrl)) {
+                        if (request.url.replace("www.", "").startsWith(superWhitelistedUrl.replace("www.", ""))) {
                             return true;
                         }
                     }
@@ -76,7 +76,7 @@ const App = () => {
 
     function onJsLoaderWebViewMessage(payload) {
         if (!currentJsLoaderCb) return;
-        (vmServeConsoleCache || console).log("::", payload.nativeEvent.data, "::");
+        //(vmServeConsoleCache || console).log("::", payload.nativeEvent.data, "::");
         currentJsLoaderCb(payload.nativeEvent.data);
         currentJsLoaderCb = null;
     }
@@ -130,6 +130,7 @@ const App = () => {
 };
 
 let vmServeConsoleCache = console;
+let superLoadTheWhitelistedUrls = () => {};
 const MediaPluginFolder = RNFS.DocumentDirectoryPath + "/view.me/server/cleansers/mediaplugins";
 
 class ServerProxy {
@@ -159,6 +160,7 @@ class ServerProxy {
             //this.startExpressServer(this.startupOption, this.startupOption.cb);
         });
         vmServeConsoleCache = this.vmServeConsole;
+        superLoadTheWhitelistedUrls = this.loadTheWhitelistedUrls;
     }
 
     startExpressServer = (options, cb) => {
@@ -260,13 +262,13 @@ class ServerProxy {
         // plugin setups
 
         app.get('/mediaplugin/plugin/install', async (req, res) => {
-            ffs.get(req.query.scrapper_class_location, { responseType: "text" }).then(async function (response) {
-                RNFS.writeFile(`${MediaPluginFolder}/${req.query.name}.js`, response.data, 'utf8')
+            ffs.get(req.query.scrapper_class_location, { responseType: "text" }).then(async function (response1) {
+                RNFS.writeFile(`${MediaPluginFolder}/${req.query.name}.js`, response1.data, 'utf8')
                     .then((_) => vmServeConsoleCache.log(`successfully created the ${req.query.name}.js file`))
                     .catch((err) => vmServeConsoleCache.log(`error creating ${req.query.name}.js:`, err.message));
 
-                ffs.get(req.query.scrapper_class_location, { responseType: "text" }).then(async function (response) {
-                    RNFS.writeFile(`${MediaPluginFolder}/${req.query.name}.player.js`, response.data, 'utf8')
+                ffs.get(req.query.player_injection_script_location, { responseType: "text" }).then(async function (response2) {
+                    RNFS.writeFile(`${MediaPluginFolder}/${req.query.name}.player.js`, response2.data, 'utf8')
                         .then((_) => vmServeConsoleCache.log(`successfully created the ${req.query.name}.player.js file`))
                         .catch((err) => vmServeConsoleCache.log(`error creating ${req.query.name}.player.js:`, err.message));
 
@@ -276,9 +278,9 @@ class ServerProxy {
                     RNFS.writeFile(`${MediaPluginFolder}/PlayerInjectionScriptsMap.json`, JSON.stringify(playerInjectionScriptsMap), 'utf8')
                         .then((_) => vmServeConsoleCache.log(`successfully updated the PlayerInjectionScriptsMap.js file`))
                         .catch((err) => vmServeConsoleCache.log(`error updating PlayerInjectionScriptsMap.js:`, err.message));
-                    this.loadTheWhitelistedUrls(playerInjectionScriptsMap);
-                    res.send(`{ "success": true }`);
                     __CachedPlayerInjectionScripts = {};
+                    res.send(`{ "success": true }`);
+                    superLoadTheWhitelistedUrls(playerInjectionScriptsMap);
                 }).catch(function (err) {
                     vmServeConsoleCache.error(err);
                     res.status(500); res.send(err.message);
@@ -384,12 +386,11 @@ async function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
 }
 
 let currentJsLoaderCb;
+let jsLoaderElementToWaitFor = "let elementToWaitFor;";
 function jsRequiredRunner(actualUrl, req, cb) {
     currentJsLoaderCb = cb;
-    if (req.query.element_to_wait_for) {
-        if (actualUrl.includes("?")) actualUrl += "&wfel___="+req.query.element_to_wait_for;
-        else actualUrl += "?wfel___="+req.query.element_to_wait_for;
-    }
+    if (req.query.element_to_wait_for) jsLoaderElementToWaitFor = `let elementToWaitFor = '${req.query.element_to_wait_for}';`;
+    else jsLoaderElementToWaitFor = "let elementToWaitFor;";
     superSetJsRequiredUrl({ uri: actualUrl });
 }
 
@@ -408,16 +409,19 @@ async function getPlayerInjectionScript(baseUrlOrName) {
 
 const jsLoadingInjection = `
 
+function getElementByXpath(path) {
+    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
 function waitForElm(selector) {
     return new Promise(resolve => {
-        alert(selector);
-        if (document.querySelector(selector)) {
-            return resolve(document.querySelector(selector));
+        if (getElementByXpath(selector)) {
+            return resolve(getElementByXpath(selector));
         }
 
         const observer = new MutationObserver(mutations => {
-            if (document.querySelector(selector)) {
-                resolve(document.querySelector(selector));
+            if (getElementByXpath(selector)) {
+                resolve(getElementByXpath(selector));
                 observer.disconnect();
             }
         });
@@ -429,12 +433,11 @@ function waitForElm(selector) {
     });
 }
 
-const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
-if (!searchParams.get("wfel___")) {
+// elementToWaitFor added from injection
+if (typeof elementToWaitFor !== "string") {
     window.ReactNativeWebView.postMessage(document.documentElement.innerHTML);
 } else {
-    waitForElm(searchParams.get("wfel___")).then((elm) => {
-        alert("DONE WAITING FOR "+searchParams.get("wfel___"));
+    waitForElm(elementToWaitFor).then((elm) => {
         window.ReactNativeWebView.postMessage(document.documentElement.innerHTML);
     });
 }
@@ -443,18 +446,18 @@ if (!searchParams.get("wfel___")) {
 const debugging = `
 const consoleLog = (type, ...log) => window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'console', 'data': {'type': type, 'log': log}}));
 console = {
-    log: (log) => consoleLog('log', log),
-    debug: (log) => consoleLog('debug', log),
-    info: (log) => consoleLog('info', log),
-    warn: (log) => consoleLog('warn', log),
-    error: (log) => consoleLog('error', log),
+    log: (...log) => consoleLog('log', log),
+    debug: (...log) => consoleLog('debug', log),
+    info: (...log) => consoleLog('info', log),
+    warn: (...log) => consoleLog('warn', log),
+    error: (...log) => consoleLog('error', log),
 };
 
 document.addEventListener("message", function(event) {
     const data = JSON.parse(event.data);
     if (data.type == 'player_trimmer') {
-        try { eval(data.source); } catch (err) { console.error("LOADING PLUGIN PLAYER INJECTION", err); }
-        try { eval(data.control_injection); } catch (err) { console.error("LOADING PLAYER CONTROL INJECTION",err); }
+        try { eval(data.source); } catch (err) { console.error("ERROR LOADING PLUGIN PLAYER INJECTION", err.message); }
+        try { eval(data.control_injection); } catch (err) { console.error("ERROR LOADING PLAYER CONTROL INJECTION", err.message); }
         window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'player_triming_done'}))
     }
 }, false);
@@ -471,7 +474,7 @@ const playerControlsInjection = `
             <button onclick="window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'go_home'}))"
                 style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Home</button>
         </div>\`);
-    }, 1000);
+    }, 3000);
     `;
 
 export default App;
