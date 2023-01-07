@@ -7,6 +7,7 @@ import { Database, viewMeConsole } from "../../../utils";
 import { Button, ButtonGroup } from "@ronuse/norseu/core/buttons";
 
 let activeMedia;
+let superMoviesByGenres;
 
 function HomePreviews(props) {
 
@@ -19,6 +20,10 @@ function HomePreviews(props) {
     const [moviesByGenres, setMoviesByGenres] = React.useState(Object.keys(genres).reduce((a, v) => ({ ...a, [v]: [] }), {}));
 
     React.useEffect(() => {
+        if (superMoviesByGenres) {
+            setMoviesByGenres(superMoviesByGenres);
+            return;
+        }
         requestService.mapppedRequest(Object.keys(moviesByGenres).reduce((acc, genre) => {
             acc[genre] = requestService.getPopularComingSoonOrGenreLink(genres[genre]);
             return acc;
@@ -35,6 +40,7 @@ function HomePreviews(props) {
                     : Object.values(genresWithMedias)[0]));
             if (!previewRollete) return;
             setMoviesByGenres(genresWithMedias);
+            superMoviesByGenres = genresWithMedias;
             activeMedia = previewRollete[Math.floor(Math.random() * ((previewRollete.length - 1) - 0 + 1)) + 0] || previewMovie;
             setPreviewMovie(activeMedia);
             setPreviewIsFavourite(Database.isFavourite(activeMedia, user));
