@@ -39,7 +39,7 @@ function HomePreviews(props) {
             viewMeConsole.error(err);
         });
     }, []);
-
+ 
     function resolveMediaListResult(genresWithMedias) {
         const previewRollete = ((genresWithMedias["Popular"] && genresWithMedias["Popular"].length)
             ? genresWithMedias["Popular"]
