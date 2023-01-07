@@ -21,7 +21,7 @@ function HomePreviews(props) {
 
     React.useEffect(() => {
         if (superMoviesByGenres) {
-            setMoviesByGenres(superMoviesByGenres);
+            resolveMediaListResult(superMoviesByGenres);
             return;
         }
         requestService.mapppedRequest(Object.keys(moviesByGenres).reduce((acc, genre) => {
@@ -33,23 +33,27 @@ function HomePreviews(props) {
             if (activelyWatching.length) {
                 genresWithMedias = { [window.viewmore.i18nData.resume_watching]: activelyWatching, ...res.data };
             }
-            const previewRollete = ((genresWithMedias["Popular"] && genresWithMedias["Popular"].length)
-                ? genresWithMedias["Popular"]
-                : ((genresWithMedias[window.viewmore.i18nData.resume_watching] && genresWithMedias[window.viewmore.i18nData.resume_watching].length)
-                    ? genresWithMedias[window.viewmore.i18nData.resume_watching]
-                    : Object.values(genresWithMedias)[0]));
-            if (!previewRollete) return;
-            setMoviesByGenres(genresWithMedias);
             superMoviesByGenres = genresWithMedias;
-            activeMedia = previewRollete[Math.floor(Math.random() * ((previewRollete.length - 1) - 0 + 1)) + 0] || previewMovie;
-            setPreviewMovie(activeMedia);
-            setPreviewIsFavourite(Database.isFavourite(activeMedia, user));
-            setActivelyWatchingPreview(Database.isActivelyWatching(user, activeMedia));
-            setLandingBackgroundImageLink(activeMedia.preview_image);
+            resolveMediaListResult(res.data);
         }).catch(err => {
             viewMeConsole.error(err);
         });
     }, []);
+
+    function resolveMediaListResult(genresWithMedias) {
+        const previewRollete = ((genresWithMedias["Popular"] && genresWithMedias["Popular"].length)
+            ? genresWithMedias["Popular"]
+            : ((genresWithMedias[window.viewmore.i18nData.resume_watching] && genresWithMedias[window.viewmore.i18nData.resume_watching].length)
+                ? genresWithMedias[window.viewmore.i18nData.resume_watching]
+                : Object.values(genresWithMedias)[0]));
+        if (!previewRollete) return;
+        setMoviesByGenres(genresWithMedias);
+        activeMedia = previewRollete[Math.floor(Math.random() * ((previewRollete.length - 1) - 0 + 1)) + 0] || previewMovie;
+        setPreviewMovie(activeMedia);
+        setPreviewIsFavourite(Database.isFavourite(activeMedia, user));
+        setActivelyWatchingPreview(Database.isActivelyWatching(user, activeMedia));
+        setLandingBackgroundImageLink(activeMedia.preview_image);
+    }
 
     return (<div className="content">
         <div className="preview">
