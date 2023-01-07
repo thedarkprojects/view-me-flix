@@ -34,7 +34,7 @@ function HomePreviews(props) {
                 genresWithMedias = { [window.viewmore.i18nData.resume_watching]: activelyWatching, ...res.data };
             }
             superMoviesByGenres = genresWithMedias;
-            resolveMediaListResult(res.data);
+            resolveMediaListResult(superMoviesByGenres);
         }).catch(err => {
             viewMeConsole.error(err);
         });
