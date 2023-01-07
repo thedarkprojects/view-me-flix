@@ -25,6 +25,7 @@ const { CreateRingBuffer } = require('./thegreatbridge');
     console.log('read file res: ', res);
 })*/
 
+let superWhitelistedUrls = ["file://"];
 let superSetJsRequiredUrl;
 const App = () => {
 
@@ -57,41 +58,58 @@ const App = () => {
             <StatusBar barStyle={'light-content'} backgroundColor={"black"} />
             <WebView containerStyle={{ display: (pageIsLoading ? null : "none") }} source={jsRequiredUrl} injectedJavaScript={jsLoadingInjection}
                 onMessage={onJsLoaderWebViewMessage} onShouldStartLoadWithRequest={() => false} />
-            <WebView containerStyle={{ display: (!pageIsLoading ? null : "none") }} ref={webViewRef} injectedJavaScript={debugging} onMessage={onWebViewMessage}
+            <WebView allowsFullscreenVideo={true} thirdPartyCookiesEnabled={false} javaScriptCanOpenWindowsAutomatically={false}
+                allowFileAccess={true} setSupportMultipleWindows={false} originWhitelist={["file://", "http://", "https://"]}
+                containerStyle={{ display: (!pageIsLoading ? null : "none") }} ref={webViewRef} injectedJavaScript={debugging} onMessage={onWebViewMessage}
                 onNavigationStateChange={onNavigationStateChangeEvent}
                 style={{ backgroundColor: 'white' }} source={clientSource} onShouldStartLoadWithRequest={(request) => {
-                    /*if (request.url.includes('file://') || request.url.includes('soap2')) {
-                        return true;
+                    for (const superWhitelistedUrl of superWhitelistedUrls) {
+                        if (request.url.startsWith(superWhitelistedUrl)) {
+                            return true;
+                        }
                     }
-                    return false;*/
-                    return true;
-                }} />
+                    console.log("BLOCKING POP UP TO WEBSITE", request.url);
+                    return false
+                }} onError={(err) => console.log("WE ERRORING OUT", err)}/>
         </SafeAreaView>
     );
 
     function onJsLoaderWebViewMessage(payload) {
         if (!currentJsLoaderCb) return;
+        (vmServeConsoleCache || console).log("::", payload.nativeEvent.data, "::");
         currentJsLoaderCb(payload.nativeEvent.data);
         currentJsLoaderCb = null;
     }
 
     function onWebViewMessage(payload) {
         const data = JSON.parse(payload.nativeEvent.data);
-        (vmServeConsoleCache || console).log("FROM WEBVIEW", data.data.log);
+        if (data.type === "console") {
+            (vmServeConsoleCache || console).log("FROM WEBVIEW", data.data.log);
+            return;
+        }
+        if (data.type === "go_home") {
+            console.log("GO HOME", clientSource);
+            setClientSource({ uri: clientSource.uri.replace("&1", "") + "&1" });
+            return;
+        }
+        if (data.type === "player_triming_done") {
+            setPageIsLoading(false);
+            return;
+        }
     }
 
     async function onNavigationStateChangeEvent(state) {
-        if (state.url.includes("file://")) return;
+        if (state.url.includes("file://")) { if (pageIsLoading) setPageIsLoading(false); return; }
+        //console.log("STATE CHANGED", state)
         if (!pageIsLoading && state.loading) {
             setJsRequiredUrl({ uri: 'file:///android_asset/loader.html' });
             setPageIsLoading(true);
             return;
         }
-        // send it `${MediaPluginFolder}/${__CachedPlayerInjectionScripts[baseUrlOrName]}`
         const baseUrl = state.url.substr(0, state.url.indexOf("/", 10));
+        if (!baseUrl) { return setPageIsLoading(false); };
         const trimmerSource = await getPlayerInjectionScript(baseUrl);
         webViewRef.current?.postMessage(JSON.stringify({ type: 'player_trimmer', source: trimmerSource, control_injection: playerControlsInjection }));
-        setPageIsLoading(false);
     }
 
     function handleAppStateChange(nextAppState) {
@@ -157,7 +175,7 @@ class ServerProxy {
             this.finalPort = options.port;
             this.prepareMediaPluginFolder();
             this.vmServeConsole.log(`client proxy online serving ${options.clientLocation || "build/"}`);
-            //this.vmServeConsole.log("plugin installation path", path.resolve(MediaPluginFolder));
+            this.vmServeConsole.log("plugin installation path", MediaPluginFolder);
             //options.listerner = listener;
             options.listenAddress = { address: lboptions.ipAddress, port: lboptions.port };
             options.getPlayerInjectionScript = getPlayerInjectionScript;
@@ -177,14 +195,23 @@ class ServerProxy {
         this.LanerBridge.stopServer(this.serverKey, (err, _) => this.vmServeConsole.error("SERVER.PROXY.STOP", err))
     }
 
+    loadTheWhitelistedUrls(playerInjectionScriptsMap) {
+        superWhitelistedUrls = superWhitelistedUrls.concat(Object.keys(playerInjectionScriptsMap));
+    }
+
     async prepareMediaPluginFolder() {
-        if (await RNFS.exists(`${MediaPluginFolder}`)) return;
+        if (await RNFS.exists(`${MediaPluginFolder}`)) {
+            this.loadTheWhitelistedUrls(JSON.parse(await RNFS.readFile(`${MediaPluginFolder}/PlayerInjectionScriptsMap.json`, 'utf8')));
+            return;
+        }
         await RNFS.mkdir(`${MediaPluginFolder}`);
         // create PlayerInjectionScriptsMap
+        const playerInjectionScriptsMap = JSON.parse(`{"Soap2DayUs":"Soap2DayUs.player.js","https://soap2day.rs":"Soap2DayUs.player.js"}`);
         RNFS.writeFile(`${MediaPluginFolder}/PlayerInjectionScriptsMap.json`,
-            `{"Soap2DayUs":"Soap2DayUs.player.js","https://soap2day.rs":"Soap2DayUs.player.js"}`, 'utf8')
+            JSON.stringify(playerInjectionScriptsMap), 'utf8')
             .then((_) => vmServeConsoleCache.log("successfully created the PlayerInjectionScriptsMap.json file"))
             .catch((err) => vmServeConsoleCache.log("error creating PlayerInjectionScriptsMap.json:", err.message));
+        this.loadTheWhitelistedUrls(playerInjectionScriptsMap);
         // install default plugin, Soap2Day.rs
         RNFS.writeFile(`${MediaPluginFolder}/Soap2DayUs.player.js`, Soap2DayUsPlayerTrimmerHardcoded, 'utf8')
             .then((_) => vmServeConsoleCache.log("successfully created the Soap2DayUs.player.js file"))
@@ -197,12 +224,12 @@ class ServerProxy {
 
     _arrayBufferToBase64(buffer) {
         var binary = '';
-        var bytes = new Uint8Array( buffer );
+        var bytes = new Uint8Array(buffer);
         var len = bytes.byteLength;
         for (var i = 0; i < len; i++) {
-            binary += String.fromCharCode( bytes[ i ] );
+            binary += String.fromCharCode(bytes[i]);
         }
-        return btoa( binary );
+        return btoa(binary);
     }
 
     setupRoutes() {
@@ -249,6 +276,7 @@ class ServerProxy {
                     RNFS.writeFile(`${MediaPluginFolder}/PlayerInjectionScriptsMap.json`, JSON.stringify(playerInjectionScriptsMap), 'utf8')
                         .then((_) => vmServeConsoleCache.log(`successfully updated the PlayerInjectionScriptsMap.js file`))
                         .catch((err) => vmServeConsoleCache.log(`error updating PlayerInjectionScriptsMap.js:`, err.message));
+                    this.loadTheWhitelistedUrls(playerInjectionScriptsMap);
                     res.send(`{ "success": true }`);
                     __CachedPlayerInjectionScripts = {};
                 }).catch(function (err) {
@@ -358,6 +386,10 @@ async function loadAndMediaPlugin(mediaPluginFolder, logger, name, port) {
 let currentJsLoaderCb;
 function jsRequiredRunner(actualUrl, req, cb) {
     currentJsLoaderCb = cb;
+    if (req.query.element_to_wait_for) {
+        if (actualUrl.includes("?")) actualUrl += "&wfel___="+req.query.element_to_wait_for;
+        else actualUrl += "?wfel___="+req.query.element_to_wait_for;
+    }
     superSetJsRequiredUrl({ uri: actualUrl });
 }
 
@@ -369,20 +401,47 @@ async function getPlayerInjectionScript(baseUrlOrName) {
         return (await RNFS.readFile(`${MediaPluginFolder}/${__CachedPlayerInjectionScripts[baseUrlOrName]}`, 'utf8'));
     } catch (err) {
         vmServeConsoleCache.error("Unable to read and load the injection script entry", err);
-        return `alert('Cannot Load PlayerInjectionScriptsMap.json');`;
+        return ``;
+        //return `alert('Cannot Load PlayerInjectionScriptsMap.json');`;
     }
 }
 
 const jsLoadingInjection = `
-//document.addEventListener('readystatechange', function() {
-//    setTimeout(function() {
+
+function waitForElm(selector) {
+    return new Promise(resolve => {
+        alert(selector);
+        if (document.querySelector(selector)) {
+            return resolve(document.querySelector(selector));
+        }
+
+        const observer = new MutationObserver(mutations => {
+            if (document.querySelector(selector)) {
+                resolve(document.querySelector(selector));
+                observer.disconnect();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+}
+
+const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
+if (!searchParams.get("wfel___")) {
+    window.ReactNativeWebView.postMessage(document.documentElement.innerHTML);
+} else {
+    waitForElm(searchParams.get("wfel___")).then((elm) => {
+        alert("DONE WAITING FOR "+searchParams.get("wfel___"));
         window.ReactNativeWebView.postMessage(document.documentElement.innerHTML);
-//    }, 20000);
-//}, false);
+    });
+}
 `;
 
 const debugging = `
-const consoleLog = (type, log) => window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'console', 'data': {'type': type, 'log': log}}));
+const consoleLog = (type, ...log) => window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'console', 'data': {'type': type, 'log': log}}));
 console = {
     log: (log) => consoleLog('log', log),
     debug: (log) => consoleLog('debug', log),
@@ -394,8 +453,9 @@ console = {
 document.addEventListener("message", function(event) {
     const data = JSON.parse(event.data);
     if (data.type == 'player_trimmer') {
-        try { eval(data.source); } catch (err) { console.error(err); }
-        try { eval(data.control_injection); } catch (err) { console.error(err); }
+        try { eval(data.source); } catch (err) { console.error("LOADING PLUGIN PLAYER INJECTION", err); }
+        try { eval(data.control_injection); } catch (err) { console.error("LOADING PLAYER CONTROL INJECTION",err); }
+        window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'player_triming_done'}))
     }
 }, false);
 `;
@@ -406,12 +466,12 @@ const playerControlsInjection = `
         document.getElementsByTagName('body')[0].innerHTML += (\`<div style='position: fixed; bottom: 20px; left: 20px; z-index: 999; display: flex; flex-wrap: wrap;'>
             <button onclick='window.history.go(-1); return false;'
                 style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Back</button>
-            <!--<button onclick='window.location.reload(); return false;'
-                style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Reload</button>-->
-            <button onclick='window.history.go(-10); return false;'
+            <button onclick='window.location.reload(); return false;'
+                style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Reload</button>
+            <button onclick="window.ReactNativeWebView.postMessage(JSON.stringify({'type': 'go_home'}))"
                 style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Home</button>
         </div>\`);
-    }, 5000);
+    }, 1000);
     `;
 
 export default App;
