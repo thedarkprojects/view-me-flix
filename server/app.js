@@ -230,7 +230,7 @@ app.get('/get_client_proxies', async (req, res) => {
 function startExpressServer(options, cb) {
     options = options || {};
     options.port = options.port || finalPort;
-    app.use(express.static(options.clientLocation || "build/"));
+    app.use('/client', express.static(options.clientLocation || "build/"));
     vmServeConsole.log(`view more middleware trying to start on port ${options.port}`);
     const listener = app.listen(options.port, () => {
         finalPort = options.port;

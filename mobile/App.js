@@ -176,7 +176,7 @@ class ServerProxy {
             this.serverKey = lboptions.serverKey;
             this.finalPort = options.port;
             this.prepareMediaPluginFolder();
-            this.vmServeConsole.log(`client proxy online serving ${options.clientLocation || "build/"}`);
+            this.vmServeConsole.log(`client proxy online serving ${options.clientLocation || "file:///android_asset/build/"}`);
             this.vmServeConsole.log("plugin installation path", MediaPluginFolder);
             //options.listerner = listener;
             options.listenAddress = { address: lboptions.ipAddress, port: lboptions.port };
@@ -236,6 +236,35 @@ class ServerProxy {
 
     setupRoutes() {
         const app = this.app;
+
+        // client router
+
+        async function resolveClientRelay(req, res) {
+            let { endpoint } = req; 
+            if (!endpoint.startsWith("/client")) endpoint = "/client" + endpoint;
+            if (endpoint === "/client") endpoint = "/client/index.html";
+            try {
+                const assetLocation = `${endpoint.replace("/client", "build")}`;
+                console.log("CLIENT ALA BASTER ", endpoint, assetLocation);
+                const fileContent = await RNFS.readFileAssets(assetLocation, 'utf8');
+                res.send(fileContent);
+            } catch (err) {
+                vmServeConsoleCache.error(err);
+                res.send("client proxy is not feeling ok at the moment");
+            }
+        }
+
+        // I don't know regex that much
+        app.get('.*\\.txt', resolveClientRelay);
+        app.get('.*\\.png', resolveClientRelay);
+        app.get('.*\\.json', resolveClientRelay);
+        app.get('.*\\.html', resolveClientRelay);
+        app.get('/client/*', resolveClientRelay);
+        app.get('/static/*/*', resolveClientRelay);
+        app.get('/static/*/*/*', resolveClientRelay);
+        app.get('/static/*/*/*/*', resolveClientRelay);
+
+        // media relays
 
         app.get('/ext/raw', async (req, res) => {
             if (!req.query.url) return res.send("");
