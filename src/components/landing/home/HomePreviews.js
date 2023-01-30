@@ -39,7 +39,7 @@ function HomePreviews(props) {
             viewMeConsole.error(err);
         });
     }, []);
- 
+
     function resolveMediaListResult(genresWithMedias) {
         const previewRollete = ((genresWithMedias["Popular"] && genresWithMedias["Popular"].length)
             ? genresWithMedias["Popular"]
@@ -104,6 +104,13 @@ function HomePreviews(props) {
                                 {!movie.is_genre ? <div className="movie-title">{movie.title}</div> : null}
                                 {movie.is_genre ? <i className="fa fa-arrow-right"></i> : null}
                                 {movie.is_genre ? <span>View More</span> : null}
+                                {moviesByGenre === window.viewmore.i18nData.resume_watching && !movie.is_genre
+                                    ? <i className="fa fa-times-circle" onClick={(e) => {
+                                        e.stopPropagation();
+                                        Database.removeFromActivelyWatching(movie);
+                                        e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+                                    }}></i>
+                                    : null}
                             </div>);
                         })}
                     </ScrollPanel>

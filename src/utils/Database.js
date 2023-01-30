@@ -3,7 +3,7 @@ const lzString = require('lz-string');
 
 const Database = {
 
-    VERSION: "1.0.1",
+    VERSION: "1.0.2",
     _encryptor: (v) => lzString.compress(v),
     _decryptor: (v) => lzString.decompress(v),
     _cacheImpl: null,
@@ -74,8 +74,8 @@ const Database = {
         }
     ],
 
-    __Tables: ["view.me.users", "view.me.favourites", "view.me.actively-watching", "view.me.settings.media.sources", 
-            "view.me.settings.plugin.host"],
+    __Tables: ["view.me.users", "view.me.favourites", "view.me.actively-watching", "view.me.settings.media.sources",
+        "view.me.settings.plugin.host"],
 
     /** The Database Encryption Interface */
 
@@ -184,8 +184,8 @@ const Database = {
                 query.op = (query.op || "").toLowerCase();
                 if (query.op === "!=" || query.op === "nq") return x[query.field] !== query.value;
                 if (query.op === "LIKE" || query.op === "contains") return x[query.field].includes(query.value);
-                if (query.op === "RLIKE" || query.op === "endswith")  return x[query.field].endsWith(query.value);
-                if (query.op === "LLIKE" || query.op === "startswith")  return x[query.field].startsWith(query.value);
+                if (query.op === "RLIKE" || query.op === "endswith") return x[query.field].endsWith(query.value);
+                if (query.op === "LLIKE" || query.op === "startswith") return x[query.field].startsWith(query.value);
                 return x[query.field] === query.value;
             });
             if (index > -1) return index;
@@ -205,7 +205,7 @@ const Database = {
     addToRecord(tableName, newRecord, limit) {
         const records = Array.isArray(tableName) ? tableName : Database.objectFromCache(tableName, []);
         if (newRecord.id) return Database.updateInRecord(tableName, newRecord);
-        newRecord.id = (records.length ? records[records.length-1].id + 1: records.length+1);
+        newRecord.id = (records.length ? records[records.length - 1].id + 1 : records.length + 1);
         if (limit && records.length > limit) {
             records.splice(0, 0, newRecord);
             records.splice(limit, 1);
@@ -217,14 +217,14 @@ const Database = {
 
     updateInRecord(tableName, record) {
         const records = Database.deleteFromRecord(tableName, record);
-        records.splice(record.id-1, 0, record);
+        records.splice(record.id - 1, 0, record);
         Database.cacheObject(tableName, records);
         return records;
     },
 
     deleteFromRecord(tableName, record, queries) {
         const records = Database.getRecords(tableName);
-        const index = queries ? Database.indexInRecord(tableName, queries): records.findIndex(x => x.id === record.id);
+        const index = queries ? Database.indexInRecord(tableName, queries) : records.findIndex(x => x.id === record.id);
         records.splice(index, 1);
         return Database.saveRecords(tableName, records);
     },
@@ -232,6 +232,36 @@ const Database = {
     deleteMultipleFromRecord(tableName, queries) {
         const records = Database.getRecords(tableName, queries);
         records.forEach(record => Database.deleteFromRecord(tableName, record));
+    },
+
+    /* Licensing */
+
+    isLicensed() {
+        const licenseKeys = Database.getRecords("view.me.licence.key");
+        return licenseKeys.length && licenseKeys[0].key.includes("B!&DisTheW0rd");
+    },
+
+    storeLicenceKey(key) {
+        //if (Database.getRecords("view.me.users").length) return false;
+        const date = new Date();
+        const dateParts = [date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes()];
+        let count = 1;
+        let aindex = 0;
+        let validWithinTheHour = key.includes("E") && key.includes("XPH") && key.includes("x1I4");
+        for (let datePart of dateParts) {
+            datePart = `s${datePart}p`;
+            if (count == 4 && validWithinTheHour) {
+                break;
+            }
+            console.log(datePart, aindex, key.substr(aindex), key.substr(aindex).includes(datePart));
+            if (!key.substr(aindex).includes(datePart)) {
+                return false;
+            }
+            aindex = key.indexOf(datePart) + (datePart + "").length;
+            count++;
+        }
+        Database.addToRecord("view.me.licence.key", { key: key + "B!&DisTheW0rd", date: date.toString() });
+        return true;
     },
 
     /* Middleware records */
@@ -327,6 +357,10 @@ const Database = {
         Database.addToRecord("view.me.actively-watching", media, 19);
     },
 
+    removeFromActivelyWatching(media, user, queries) {
+        return Database.deleteFromRecord("view.me.actively-watching", media, queries);
+    },
+
     /* Settings - Genre */
 
     getGenres(user, queries = []) {
@@ -409,7 +443,8 @@ const Database = {
             });
             return acc;
         }, {});
-        if (!mediaSources.genre) return { popular: [], genre: [], movies: [],
+        if (!mediaSources.genre) return {
+            popular: [], genre: [], movies: [],
             cast: [], tv_shows: [], search: [], coming_soon: [],
         };
         Database.___CachedUrls[user.id] = mediaSources;
@@ -528,7 +563,7 @@ const Database = {
     },
 
     /* Color Map */
-    
+
     _tempNorseUColorMap: {
         "norseu-stateless": "",
         "norseu-primary": "#3699ff",

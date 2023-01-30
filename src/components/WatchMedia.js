@@ -11,6 +11,7 @@ import { Alignment, Orientation, Scheme } from "@ronuse/norseu/core/variables";
 import { RequestService } from "../services";
 
 let cMedia = null;
+let seasonOption = { index: 0, label: "Season 1" };
 function WatchMedia() {
 
     const navigate = useNavigate();
@@ -82,8 +83,7 @@ function WatchMedia() {
                         options={mainMedia?.seasons?.map((season, index) => {
                             return { label: season.name, value: season.name, index, episodes: season.episodes };
                         })} onSelectOption={(e) => {
-                            cMedia.season_index = e.option.index;
-                            cMedia.active_season_title = e.option.label;
+                            seasonOption = e.option;
                             setSelectedSeasonEpisodes(e.option.episodes);
                         }} selectedOptionIndex={(cMedia || mainMedia).season_index || 0} matchTargetSize />
                     <div className="episode-list">
@@ -197,7 +197,8 @@ function WatchMedia() {
 
     function navigateToMediaPlayer(media, final_media_link) {
         if (media.actively_watching_episode && media.actively_watching_episode.title) {
-            media.season_episode_name = `${(media.seasons || [{ name: "Seaon 1"}])[0].name} - ${media.actively_watching_episode.title}`
+            media.season_index = seasonOption.index;
+            media.season_episode_name = `${seasonOption.label} - ${media.actively_watching_episode.title}`;
         }
         Database.addToActivelyWatching(user, { ...media, final_media_link });
         window.location = final_media_link;

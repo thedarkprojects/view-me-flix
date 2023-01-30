@@ -83,7 +83,11 @@ async function jsRequiredRunner(actualUrl, req, cb) {
     if (!page) page = await context.newPage();
     await page.goto(actualUrl);
     if (req.query.element_to_wait_for) {
-        await page.click(req.query.element_to_wait_for, {timeout: 9000});
+        try {
+            await page.click(req.query.element_to_wait_for, {timeout: 9000});
+        } catch (err) {
+            vmServeConsole.error(err);
+        };
     }
     page.content().then(async function (html, req) {
         cb(html, req);
