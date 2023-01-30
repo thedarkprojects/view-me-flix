@@ -23,6 +23,10 @@ function SelectUser() {
             icon: <div className="scheme-icon" style={{ background: Database.getColorHex([Scheme[scheme]]) }}></div>
         };
     });
+    if (!Database.isLicensed()) {
+        window.location = "/";
+        return;
+    }
 
     return (<div className="select-user">
         <Link to="/" className="app-name" style={{ fontSize: 50 }}>VM</Link>
