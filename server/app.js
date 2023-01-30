@@ -242,6 +242,7 @@ function startExpressServer(options, cb) {
         vmServeConsole.log(`client proxy online serving ${options.clientLocation || "build/"}`);
         vmServeConsole.log("plugin installation path", path.resolve(MediaPluginFolder));
         options.listerner = listener;
+        options.vmServeConsole = vmServeConsole;
         options.listenAddress = listener.address();
         options.getPlayerInjectionScript = getPlayerInjectionScript;
         options.url = `http://${options.listenAddress.address.replace("::", "127.0.0.1")}:${options.listenAddress.port}`;

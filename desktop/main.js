@@ -5,7 +5,7 @@ const { app, BrowserView, BrowserWindow } = require('electron');
 const { startExpressServer } = require('../server/app');
 
 let server;
-let buildFolder = path.resolve("build/");
+let buildFolder = path.join(process.resourcesPath, "build");
 const createWindow = (url) => {
     let win = new BrowserWindow({
         width: 800,
@@ -17,9 +17,11 @@ const createWindow = (url) => {
     let loaderLocation = "loader.html";
     let clientLocation = path.resolve("build/index.html");
     if (!fs.existsSync(clientLocation)) {
-        buildFolder = __dirname + "/../build/";
-        clientLocation = "build/index.html";
+        clientLocation = path.join(process.resourcesPath, "build/index.html");
         loaderLocation = "desktop/loader.html"
+    }
+    if (!fs.existsSync(buildFolder)) {
+        buildFolder = path.resolve("build/");
     }
 
     let activeView;
@@ -104,9 +106,9 @@ const getMediaSourcePlayerScript = (url) => {
 }
 
 app.whenReady().then(() => {
-    //console.log(">>>>>>>", buildFolder)
     server = startExpressServer({ useAnotherPort: true, port: 7001, clientLocation: buildFolder }, (options) => {
         serverOptions = { ...options };
+        serverOptions.vmServeConsole.log(">>>>>>>", __dirname, buildFolder, path.join(process.resourcesPath, "build"));
         console.log(`view more middleware running on port ${options.port}`);
         createWindow(options.url);
     });
