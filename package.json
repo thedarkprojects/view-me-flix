@@ -49,6 +49,12 @@
             "mobile/cleansers/**/*",
             "mobile/thegreatbridge.js"
         ],
+        "extraResources": [
+            "build"
+        ],
+        "extraFiles": [
+            "build"
+        ],
         "directories": {
             "buildResources": "desktop"
         },

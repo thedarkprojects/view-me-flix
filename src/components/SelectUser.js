@@ -23,10 +23,13 @@ function SelectUser() {
             icon: <div className="scheme-icon" style={{ background: Database.getColorHex([Scheme[scheme]]) }}></div>
         };
     });
-    if (!Database.isLicensed()) {
-        window.location = "/";
-        return;
-    }
+
+    React.useEffect(() => {
+        if (!Database.isLicensed()) {
+            window.location = "/";
+            return;
+        }
+    });
 
     return (<div className="select-user">
         <Link to="/" className="app-name" style={{ fontSize: 50 }}>VM</Link>
@@ -64,8 +67,8 @@ function SelectUser() {
     function askForPassword(user, cb) {
         alertDialog({
             message: <div style={{ marginBottom: 10 }}>
-                <PasswordInput inputStyle={{ marginTop: 15, marginBottom: 10 }} ref={passwordRef} 
-                    label={window.viewmore.i18nData.password} scheme={Scheme.LIGHT} 
+                <PasswordInput inputStyle={{ marginTop: 15, marginBottom: 10 }} ref={passwordRef}
+                    label={window.viewmore.i18nData.password} scheme={Scheme.LIGHT}
                     onInput={() => addErrorRef.current.innerText ? addErrorRef.current.innerText = null : null} fill toggleMask />
                 <span ref={addErrorRef} style={{ color: "red" }}></span>
             </div>,

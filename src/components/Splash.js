@@ -16,6 +16,7 @@ function Splash() {
         setTimeout(() => splashSpan.current.classList.add("splash-animation") /*||  playButton.current.click()*/, 1500);
         if (Database.isLicensed()) {
             setTimeout(() => navigate("/select-user"), 4000);
+            return;
         }
         requestAndValidateLicence();
     });
