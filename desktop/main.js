@@ -127,16 +127,25 @@ app.on('window-all-closed', function () {
 const backButtonOnPlayerHtml = (url) => {
     let html = `
     document.body.style.background = "black";
-    setTimeout(() => {
-        document.getElementsByTagName('body')[0].innerHTML += (\`<div style='position: fixed; bottom: 20px; left: 20px; z-index: 999; display: flex; flex-wrap: wrap;'>
-            <button onclick='window.history.go(-1); return false;'
-                style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Back</button>
-            <!--<button onclick='window.location.reload(); return false;'
-                style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Reload</button>-->
-            <button onclick='window.history.go(-10); return false;'
-                style='cursor: pointer; border-radius: 6px; padding: 16px 20px 16px 20px; background: white;'>Home</button>
-        </div>\`);
-    }, 5000);
+    let divElem = document.createElement('div');
+    divElem.style.cssText = 'position: fixed; bottom: 20px; left: 20px; z-index: 999; display: flex; flex-wrap: wrap;';
+
+    let backButton = document.createElement('button'); backButton.innerHTML = 'Back';
+    backButton.onclick = function () { window.history.go(-1); return false; }
+    backButton.style.cssText = "cursor: pointer; border-radius: 6px; padding: 16px 25px 16px 25px; background: white; color: black;";
+
+    let reloadButton = document.createElement('button'); reloadButton.innerHTML = 'Reload';
+    reloadButton.onclick = function () { window.location.reload(); return false; }
+    reloadButton.style.cssText = "cursor: pointer; border-radius: 6px; padding: 16px 25px 16px 25px; background: white; color: black;";
+
+    let homeButton = document.createElement('button'); homeButton.innerHTML = 'Home';
+    homeButton.onclick = function () { window.history.go(-10); return false; }
+    homeButton.style.cssText = "cursor: pointer; border-radius: 6px; padding: 16px 25px 16px 25px; background: white; color: black;";
+
+    divElem.appendChild(backButton);
+    divElem.appendChild(reloadButton);
+    divElem.appendChild(homeButton);
+    document.body.appendChild(divElem);
     'done';
     `;
     return html;

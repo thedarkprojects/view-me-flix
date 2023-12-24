@@ -437,9 +437,10 @@ const Database = {
         mediaSources = mediaSources.reduce((acc, mediaSource) => {
             if (!mediaSource.active) return acc;
             const mediaSourceUrls = mediaSource.urls;
+            const elementToWaitFor = encodeURIComponent(mediaSource.element_to_wait_for || "");
             Object.keys(mediaSourceUrls).map(urlKey => {
                 if (!acc[urlKey]) acc[urlKey] = [];
-                acc[urlKey].push(`null&clazz=${mediaSource.scrapper_class_name}&url=${mediaSourceUrls[urlKey]}`);
+                acc[urlKey].push(`null&clazz=${mediaSource.scrapper_class_name}&requires_js=true&url=${mediaSourceUrls[urlKey]}&element_to_wait_for=${elementToWaitFor}`);
             });
             return acc;
         }, {});

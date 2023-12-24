@@ -43,7 +43,7 @@ export class RequestService extends BaseService {
 
     getMovieDetail(url, scrapperClass) {
         const elementToWaitFor = encodeURIComponent(Database.getMediaSourcByScrapperClassName(scrapperClass)[0].element_to_wait_for || "");
-        //console.log(">>>>>>>>>>|||||||||||", elementToWaitFor);
+        console.log(">>>>>>>>>>|||||||||||", elementToWaitFor);
         return this.report(this.transport.get(`${BaseService.BaseUrl}/ext/json?url=${url}&method=GET&requires_js=true&func=cleanMoviePage&clazz=${scrapperClass}&element_to_wait_for=${elementToWaitFor}`, 
             { refreshCache: false }), (response) => {
                 response.data.similarMovies = this.shuffleArray(response.data.similarMovies || []);

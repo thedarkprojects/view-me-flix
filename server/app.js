@@ -80,8 +80,22 @@ let browser, context, page;
 async function jsRequiredRunner(actualUrl, req, cb) {
     if (!browser) browser = await chromium.launch();
     if (!context) context = await browser.newContext();
-    if (!page) page = await context.newPage();
-    await page.goto(actualUrl);
+    const page = await context.newPage();
+    await page.route('**', async route => {
+        if (!route.request().url().startsWith("https://movies7.to/")) return route.abort();
+        const response = await route.fetch({ maxRedirects: 0});
+        let headers = response.headers();
+        return route.fulfill({
+            response: response,
+            headers: headers
+        });
+    });
+    try {
+        await page.goto(actualUrl);
+    } catch (err) {
+        vmServeConsole.error(err);
+        return cb(null, req);
+    };
     if (req.query.element_to_wait_for) {
         try {
             await page.click(req.query.element_to_wait_for, {timeout: 9000});
@@ -93,7 +107,7 @@ async function jsRequiredRunner(actualUrl, req, cb) {
         cb(html, req);
     }).catch(function (err) {
         vmServeConsole.error(err);
-        return res.json([]);
+        return cb(null, req);
     });
 }
 
