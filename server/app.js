@@ -82,7 +82,7 @@ async function jsRequiredRunner(actualUrl, req, cb) {
     if (!context) context = await browser.newContext();
     const page = await context.newPage();
     await page.route('**', async route => {
-        if (!route.request().url().startsWith("https://movies7.to/")) return route.abort();
+        //if (!route.request().url().startsWith("https://movies7.to/")) return route.abort();
         const response = await route.fetch({ maxRedirects: 0});
         let headers = response.headers();
         return route.fulfill({
